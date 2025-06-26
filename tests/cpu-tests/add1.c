@@ -1,9 +1,14 @@
-#include <stdio.h>
+#include "trap.h"
+
+int add1(int a, int b) {
+    int c = a + b;
+    return c;
+}
 
 int main(){
-    int a = 10;
-    int b = 20;
-    int c = 0;
-    c = a + b;
-    return c;
+    int i, j, k;
+    i = 1;
+    j = 2;
+    k = add1(i, j);
+    if(k == 3) return 0;
 }
