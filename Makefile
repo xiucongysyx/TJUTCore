@@ -1,7 +1,7 @@
 # Top module 
 TOP_NAME				:= TJUT_TOP
 
-IMG 					?= /home/xiucong/TJUTCore/bin/add-riscv32e-npc.bin
+IMG 					?= $(TJUTCORE_HOME)/bin/add-riscv32e-npc.bin
 
 # path of the verilog file
 V_PATH					:= $(TJUTCORE_HOME)/vsrc
@@ -44,7 +44,7 @@ CFLAGS 					+= $(filter-out -D__STDC_FORMAT_MACROS, $(shell llvm-config --cxxfla
 VERILATOR_FLAGS += -I$(V_PATH)
 VERILATOR_FLAGS += --top-module $(TOP_NAME)
 VERILATOR_FLAGS += --trace --cc --exe --build 
-VERILATOR_FLAGS += --Wall
+#VERILATOR_FLAGS += --Wall
 VERILATOR_FLAGS += --Mdir $(OBJ_DIR)
 VERILATOR_FLAGS += --timescale "1ns/1ps"
 

@@ -76,7 +76,7 @@ void init_elf(char *elf_file) {
 }
 
 bool ftrace_judge(uint32_t pc, uint32_t dnpc, char *ftrace_buf, int is_call) {
-    func_stack[-1] = -1;
+    func_stack[0] = -1;
 
     for (int i = 0; i < func_info.func_num; i++) {
         if (func_info.elf_func[i].func_addr <= pc && pc < func_info.elf_func[i].func_end)
