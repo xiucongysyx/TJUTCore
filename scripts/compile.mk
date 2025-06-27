@@ -80,7 +80,7 @@ CXXFLAGS  	   += $(CFLAGS) -ffreestanding -fno-rtti -fno-exceptions
 ASFLAGS 	   += $(COMMON_CFLAGS) $(INCFLAGS) -O0 -MMD \
 				  
 LDFLAGS 	   += -melf32lriscv -T $(TJUTCORE_HOME)/scripts/linker.ld \
-				  --defsym=_pmem_start=0x80000000 \
+				  --defsym=_pmem_start=0x1000 \
 				  --defsym=_entry_offset=0x0 \
 				  -z noexecstack
 

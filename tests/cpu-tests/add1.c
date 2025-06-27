@@ -1,12 +1,12 @@
 #include "trap.h"
 
 int add1(int a, int b) {
-    int c = a + b;
+    char c = a + b;
     return c;
 }
 
 int main(){
-    int i, j, k;
+    char i, j, k;
     i = 1;
     j = 2;
     k = add1(i, j);
