@@ -7,7 +7,9 @@ module TJUT_TOP(
     output  wire    [`PC_WIDTH-1:0]     pc  
 );
 
-wire [`DATA_WIDTH-1:0]      inst;
+wire                                            clk_div4;
+
+wire [`INST_WIDTH-1:0]      inst;
 wire [`DATA_WIDTH-1:0]      src1;
 wire [`DATA_WIDTH-1:0]      src2;
 wire [`DATA_WIDTH-1:0]      imm;
@@ -59,7 +61,7 @@ TJUT_EX u_TJUT_EX(
 );
 
 TJUT_WB u_TJUT_WB(
-    .clk        (clk        ),
+    .clk        (clk_div4        ),
     .ex_out_data(ex_out_data),
     .snpc       (snpc       ),
     .memregdata (memregdata ),
@@ -76,6 +78,12 @@ TJUT_MC u_TJUT_MC(
     .ex_out_data (ex_out_data ),
     .src2        (src2        ),
     .memregdata  (memregdata  )
+);
+
+TJUT_DIV4 u_TJUT_DIV4(
+    .clk    (clk   ),
+    .rst    (rst    ),
+    .clk_div4(clk_div4)
 );
 
 

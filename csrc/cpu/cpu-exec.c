@@ -22,8 +22,8 @@ static void trace_and_difftest() {
   if(g_print_step) {IFDEF(CONFIG_ITRACE, printf("npc: ");puts(cpu.logbuf));}
 
   // 判断是否执行完或者遇到无效指令
-  if(*cpu.breakpoint) {set_npc_state(NPC_END, cpu.pc, gpr(10));}
-  else if(*cpu.invalid) {invalid_inst(cpu.pc);}
+  if(*cpu.breakpoint) {set_npc_state(NPC_END, *cpu.pc, gpr(10));}
+  else if(*cpu.invalid) {invalid_inst(*cpu.pc);}
 
   IFDEF(CONFIG_ITRACE,
     IFDEF(CONFIG_ITRACE_COND, log_write(log_fp, "%s\n", cpu.logbuf));
@@ -31,7 +31,7 @@ static void trace_and_difftest() {
 
   #ifdef CONFIG_FTRACE
     char ftrace_buf[FTRACE_BUF_SIZE];
-    if(ftrace_judge(cpu.pc, *cpu.dnpc, ftrace_buf, (BITS(cpu.inst, 6, 0) == 0x6f || BITS(cpu.inst, 6, 0) == 0x67) && BITS(cpu.inst, 11, 7) == 0x1) == true) {
+    if(ftrace_judge(*cpu.pc, *cpu.dnpc, ftrace_buf, (BITS(cpu.inst, 6, 0) == 0x6f || BITS(cpu.inst, 6, 0) == 0x67) && BITS(cpu.inst, 11, 7) == 0x1) == true) {
       log_write(ftrace_fp, "%s\n", ftrace_buf);
     } 
   #endif
@@ -45,17 +45,17 @@ static void exec_once() {
   isa_exec_once();
 #ifdef CONFIG_ITRACE
   char *p = cpu.logbuf;
-  p += snprintf(p, sizeof(cpu.logbuf), FMT_WORD ":", cpu.pc);
-  int ilen = cpu.snpc - cpu.pc;
+  p += snprintf(p, sizeof(cpu.logbuf), FMT_WORD ":", *cpu.pc);
+  int ilen = cpu.snpc - *cpu.pc;
   int i;
-  uint8_t *inst = (uint8_t*)&cpu.inst;
+  uint8_t *inst = (uint8_t*)&cpu.inst_ref;
   for(i = ilen - 1; i >= 0; i--) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }
   memset(p, ' ', 1);
   p++;
 
-  disassemble(p, cpu.logbuf + sizeof(cpu.logbuf) - p, cpu.pc, (uint8_t *)&cpu.inst, ilen);
+  disassemble(p, cpu.logbuf + sizeof(cpu.logbuf) - p, *cpu.pc, (uint8_t *)&cpu.inst_ref, ilen);
 #endif
 }
 

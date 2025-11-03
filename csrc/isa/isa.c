@@ -16,38 +16,74 @@ static void halt_step_wave() {
   IFDEF(CONFIG_VCD, tfp->flush();)
 }
 
-void step_and_dump_wave() {
+void setp_and_dump_wave_half_clk() {
   top->clk = !top->clk;
   halt_step_wave();
   halt_step_wave();
 }
 
 void isa_exec_once() {
+  // 现在是运行4个clk周期完成一次指令的取指
+  //one clk
   top->clk = !top->clk;
   halt_step_wave();
-  cpu.pc = *cpu.dnpc;
-  cpu.inst = inst_fetch(cpu.pc, 4);
+  cpu.inst_ref = inst_fetch(*cpu.pc, 4);
   halt_step_wave();
-  step_and_dump_wave();
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+
+
+  //second clk
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+
+  //third clk
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+
+  //fourth clk
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+  top->clk = !top->clk;
+  halt_step_wave();
+  halt_step_wave();
+
   IFDEF(CONFIG_MTRACE, cpu.memflag = false);
-  cpu.snpc = cpu.pc + 4;
+  cpu.snpc = *cpu.pc + 4;
 }
 
 static void restart() {
-  cpu.gpr = (word_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_WB__DOT__u_TJUT_REGFILE__DOT__rf;
-  cpu.pc = 0x80000000;
-  cpu.dnpc = (word_t*)&top->pc;
-  cpu.ddnpc = (word_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
+  int i;
+  cpu.gpr = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_WB__DOT__u_TJUT_REGFILE__DOT__rf;
+  cpu.pc = (data_t*)&top->pc;
+  cpu.dnpc = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
   cpu.breakpoint = (bool*)&top->breakpoint;
   cpu.invalid = (bool*)&top->invalid;
+  cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;
   top->rst = 1;
   top->clk = 0;
-  for(int i = 5; i > 0; i--) {
-    step_and_dump_wave();
-    step_and_dump_wave();
+  for(i = 6; i > 0; i--) {
+    setp_and_dump_wave_half_clk();
   }
-  step_and_dump_wave();
   top->rst = 0;
+
+}
+
+void init_first_pc() {
+  int i;
+  for (i = 8; i > 0; i--) {
+    setp_and_dump_wave_half_clk();
+  }
 }
 
 void isa_exit() {

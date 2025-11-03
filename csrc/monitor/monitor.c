@@ -8,6 +8,7 @@ void init_mem();
 void init_sdb();
 void init_isa();
 void init_disasm(const char *triple);
+void init_first_pc();
 
 static void welcome() {
   printf("Welcome to riscv32-npc!\n");
@@ -76,7 +77,7 @@ void init_monitor(int argc, char *argv[]) {
   // 随机数生成模式选择
   init_rand();
 
-  // 初始化log文件
+// 初始化log文件
   init_log(log_file);
 
   // 初始化mem
@@ -89,4 +90,6 @@ void init_monitor(int argc, char *argv[]) {
   IFDEF(CONFIG_ITRACE, init_disasm("riscv32-pc-linux-gun"));
 
   welcome();
+
+  init_first_pc();
 }

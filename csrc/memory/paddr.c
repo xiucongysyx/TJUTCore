@@ -11,23 +11,20 @@ uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 #ifdef CONFIG_MTRACE
 static void paddr_mtrace(vaddr_t addr, paddr_t data, char *status) {
   if (!cpu.memflag && addr != *cpu.ddnpc) {
-    log_write(mtrace_fp, "%#x %s: addr = " FMT_PADDR "\tdata = " FMT_WORD "\n", cpu.pc, status, addr, data);
+    log_write(mtrace_fp, "%#x %s: addr = " FMT_PADDR "\tdata = " FMT_WORD "\n", *cpu.pc, status, addr, data);
     cpu.memflag = true;
   }
 }
 #endif
 
 static void out_of_bound(paddr_t addr) {
-  printf("npc:address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD "\n", addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
+  printf("npc:address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD "\n", addr, PMEM_LEFT, PMEM_RIGHT, *cpu.pc);
   npc_state.state = NPC_ABORT;
 }
 
-extern "C" void cpu_pmem_read(int raddr, int *rdata, char rmask) {
-  if(raddr == 0) return;
-  paddr_t addr = raddr & ~0x3u;
-  int len = rmask & 0x7;
-  if (likely(in_pmem(addr))) {
-    *rdata = host_read(guest_to_host(addr), 4);
+extern "C" void cpu_pmem_read(paddr_t raddr, char *rdata) {
+  if (likely(in_pmem(raddr))) {
+    *rdata = host_read(guest_to_host(raddr), 1);
     #ifdef CONFIG_MTRACE
     char is_write[] = "read";
     paddr_mtrace(addr, *rdata, is_write);
@@ -40,41 +37,24 @@ extern "C" void cpu_pmem_read(int raddr, int *rdata, char rmask) {
   paddr_mtrace(addr, *rdata, is_write);
   #endif
 
-  out_of_bound(addr);
+  out_of_bound(raddr);
   }
 
 
-extern "C" void cpu_pmem_write(int waddr, int wdata, char wmask) {
-  if(waddr == 0) return;
-  paddr_t addr = waddr & ~0x3u;
-  int len = wmask & 0x7;
-  if (likely(in_pmem(addr))) {
-    paddr_t rdata = host_read(guest_to_host(addr), 4);
-    paddr_t wdata_cor;
-    switch (wmask) {
-      case 0b00000001: wdata_cor = (BITS(rdata, 31,  8) << 8 ) | (BITS(wdata,  7, 0)); break;
-      case 0b00001001: wdata_cor = (BITS(rdata, 31, 16) << 16) | (BITS(wdata,  7, 0) <<  8) | (BITS(rdata,  7, 0)); break;
-      case 0b00010001: wdata_cor = (BITS(rdata, 31, 24) << 24) | (BITS(wdata,  7, 0) << 16) | (BITS(rdata, 15, 0)); break;
-      case 0b00100001: wdata_cor = (BITS(wdata,  7,  0) << 24) | (BITS(rdata, 23, 0)); break;
-      case 0b00000010: wdata_cor = (BITS(rdata, 31, 16) << 16) | (BITS(wdata, 15, 0)); break;
-      case 0b00001010: wdata_cor = (BITS(rdata, 31, 24) << 24) | (BITS(wdata, 15, 0) <<  8) | (BITS(rdata,  7, 0)); break;
-      case 0b00010010: wdata_cor = (BITS(wdata, 15,  0) << 16) | (BITS(rdata, 15, 0)); break;
-      default: wdata_cor = wdata; break;
-    }
-    host_write(guest_to_host(addr), 4, wdata_cor);
+extern "C" void cpu_pmem_write(paddr_t waddr, char wdata) {
+    host_write(guest_to_host(waddr), 1, wdata);
     #ifdef CONFIG_MTRACE 
     char is_write[] = "write";
     paddr_mtrace(addr, wdata, is_write);
     #endif
     return;
-  }
 
   #ifdef CONFIG_MTRACE 
   char is_write[] = "write";
   paddr_mtrace(addr, wdata, is_write);
   #endif
 
-  out_of_bound(addr);
+  out_of_bound(waddr);
 }
 
 static word_t pmem_read(paddr_t addr, int len) {

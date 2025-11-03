@@ -5,12 +5,12 @@
 
 // cpu_state
 typedef struct {
-  word_t *gpr;
-  vaddr_t pc;
-  vaddr_t snpc;
-  vaddr_t *dnpc;
-  vaddr_t *ddnpc;
-  vaddr_t inst;
+  data_t *gpr;
+  data_t *pc;
+  data_t snpc;
+  data_t *dnpc;
+  inst_t *inst_act;
+  inst_t inst_ref;
   bool *breakpoint;
   bool *invalid;
   IFDEF(CONFIG_MTRACE, bool memflag);

@@ -20,12 +20,14 @@
 #include <VTJUT_TOP.h>
 #include <VTJUT_TOP___024root.h> 
 
+typedef uint8_t data_t;
+typedef uint32_t inst_t;
 typedef uint32_t word_t;
 typedef int32_t sword_t;
 #define FMT_WORD "0x%08" PRIx32
 
 typedef word_t vaddr_t;
-typedef uint32_t paddr_t;
+typedef uint8_t paddr_t;
 #define FMT_PADDR "0x%08" PRIx32
 typedef uint16_t ioaddr_t;
 

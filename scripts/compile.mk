@@ -1,32 +1,36 @@
 # Makefile for AbstractMachine Kernels and Libraries
-### riscv32e tianjin university of technology processor core
-ARCH	:= riscv32e-tpc
+# RISC-V 32E Tianjin University of Technology Processor Core
 
-## 1. Basic Setup and Checks
+###############################################################################
+# 1. Configuration and Architecture Setup
+###############################################################################
 
-### 默认目标为image
+# Target architecture
+ARCH := riscv32e-tpc
+
+# Default target is 'image'
 ifeq ($(MAKECMDGOALS),)
   MAKECMDGOALS  = image
   .DEFAULT_GOAL = image
 endif
 
-### Override checks when `make clean/clean-all/html`
+# Override checks for non-build targets (clean, clean-all, html)
 ifeq ($(findstring $(MAKECMDGOALS),clean|clean-all|html),)
 
-### Print build info message
+# Print build information
 $(info # Building $(NAME)-$(MAKECMDGOALS) [$(ARCH)])
 
-### Extract instruction set architecture (`ISA`) and platform from `$ARCH`.
+# Extract ISA and platform from ARCH
 ARCH_SPLIT = $(subst -, ,$(ARCH))
 ISA        = $(word 1,$(ARCH_SPLIT))
 PLATFORM   = $(word 2,$(ARCH_SPLIT))
 
-### Check if there is something to build
+# Validate that there are source files to build
 ifeq ($(flavor SRCS), undefined)
-  $(error Nothing to build)
+  $(error Nothing to build - SRCS variable is not defined)
 endif
 
-### Checks end here
+# End of build-time checks
 endif
 
 ## 2. General compilation Targets
@@ -80,7 +84,7 @@ CXXFLAGS  	   += $(CFLAGS) -ffreestanding -fno-rtti -fno-exceptions
 ASFLAGS 	   += $(COMMON_CFLAGS) $(INCFLAGS) -O0 -MMD \
 				  
 LDFLAGS 	   += -melf32lriscv -T $(TJUTCORE_HOME)/scripts/linker.ld \
-				  --defsym=_pmem_start=0x1000 \
+				  --defsym=_pmem_start=0x0 \
 				  --defsym=_entry_offset=0x0 \
 				  -z noexecstack
 
@@ -137,7 +141,7 @@ image: image-dep
 archive: $(ARCHIVE)
 image-dep: $(OBJS) $(LIBS)
 	@echo \# Creating image [$(ARCH)]
-.PHONY: image image-dep archive run $(LIBS)
+.PHONY: image image-dep archive $(LIBS)
 
 ### Clean a single project (remove `build/`)
 clean:

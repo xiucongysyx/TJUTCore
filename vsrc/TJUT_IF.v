@@ -5,27 +5,73 @@ module TJUT_IF(
     input   wire    [`IFCTRL_WIDTH-1:0] if_ctrl_sig,
     input   wire    [`DATA_WIDTH-1:0]   ex_out_data,
     output  reg     [`PC_WIDTH-1:0]     pc,
-    output  wire    [`PC_WIDTH-1:0]     snpc,
-    output  reg     [`DATA_WIDTH-1:0]   inst
+    output  wire    [`PC_WIDTH-1:0]    snpc, 
+    output  reg   [`INST_WIDTH-1:0]   inst
 );
 
-wire    selpc = if_ctrl_sig[0];
+// IF 控制信号解码 下一个PC信号
+wire                                            selpc = if_ctrl_sig[0];
+assign                                        snpc  = pc + 8'h4;
+reg  [`PC_WIDTH-1:0]         dnpc;
+reg  [`PC_WIDTH-1:0]         expc;
 
-assign  snpc  = pc   + 32'h4;
-wire [`PC_WIDTH-1:0] dnpc = selpc ? ex_out_data : snpc;
+
+
+// 指令读取
+parameter INST_SEG_DEFAULT = 4'b0000;
+parameter INST_SEG_ONE = 4'b0001;
+parameter INST_SEG_TWO = 4'b0010;
+parameter INST_SEG_THREE = 4'b0011;
+parameter INST_SEG_FOUR = 4'b0100;
+
+reg [`INST_SEG-1:0] inst_seg_state;
+reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
 
 import "DPI-C" function void cpu_pmem_read(
-  input int raddr, output int rdata, input byte rmask
+    input byte raddr, output byte rdata
 );
 
 always @(posedge clk) begin
     if(rst) begin
-        pc    <= 32'h80000000;
+        inst_seg_state <= INST_SEG_DEFAULT;
+        inst_byte[0] <= 8'h00;
+        inst_byte[1] <= 8'h00;
+        inst_byte[2] <= 8'h00;
+        inst_byte[3] <= 8'h00;
+        inst <= 32'h00000000;
+        pc <= 8'h00;
+        dnpc <= 8'h00;
+        expc <= 8'h00;
+    end else begin
+        case(inst_seg_state) 
+            INST_SEG_DEFAULT: begin
+                inst_seg_state <= INST_SEG_ONE;
+            end
+            INST_SEG_ONE: begin
+                cpu_pmem_read(dnpc, inst_byte[0]); 
+                inst_seg_state <= INST_SEG_TWO;
+            end
+            INST_SEG_TWO: begin
+                cpu_pmem_read(dnpc+8'h1, inst_byte[1]);
+                inst_seg_state <= INST_SEG_THREE;
+                expc <= ex_out_data;
+            end
+            INST_SEG_THREE: begin
+                cpu_pmem_read(dnpc+8'h2, inst_byte[2]);
+                inst_seg_state <= INST_SEG_FOUR;
+                pc <= dnpc;
+            end
+            INST_SEG_FOUR: begin
+                cpu_pmem_read(dnpc+8'h3, inst_byte[3]);
+                inst <= {inst_byte[3], inst_byte[2], inst_byte[1], inst_byte[0]};
+                inst_seg_state <= INST_SEG_ONE;
+                dnpc <= selpc ? expc : snpc;
+            end
+            default: begin
+                inst_seg_state <= INST_SEG_DEFAULT;
+            end
+        endcase
     end
-    else begin
-        pc    <= dnpc; 
-        cpu_pmem_read(dnpc, inst, 8'b0000_0100);
-    end 
 end
 
 endmodule

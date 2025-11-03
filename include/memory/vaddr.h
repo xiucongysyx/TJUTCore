@@ -3,7 +3,7 @@
 
 #include <common.h>
 
-word_t vaddr_ifetch(vaddr_t addr, int len);
+word_t vaddr_ifetch(data_t addr, int len);
 
 #define PAGE_SHIFT      12
 #define PAGE_SIZE       (1ul << PAGE_SHIFT)

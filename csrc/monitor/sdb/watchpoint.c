@@ -81,7 +81,7 @@ bool wp_watch() {
     if(success == false) return change;
     if(wp->result != new_ret) {
       change = true;
-      printf("Watchpoint %d: %s\ncpu.pc: 0x%x\n", wp->NO, wp->expr, cpu.pc);
+      printf("Watchpoint %d: %s\ncpu.pc: 0x%x\n", wp->NO, wp->expr, *cpu.pc);
       printf("Old value = %d\nNew value = %d\n", wp->result, new_ret);
       wp->result = new_ret;
     }

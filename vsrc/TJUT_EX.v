@@ -41,7 +41,7 @@ wire [`BRAOP_WIDTH-1:0] bra_op      = ex_ctrl_sig[`BRAOP_WIDTH+`ALUOP_WIDTH+`EXC
 wire [`LOGOP_WIDTH-1:0] log_op      = ex_ctrl_sig[`LOGOP_WIDTH+`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER-1:`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER];
 
 
-/******************32位加法模块*******************/
+/******************8位加法模块*******************/
 TJUT_ADDER u_TJUT_ADDER(
     .add_data1   (add_data1   ),
     .add_data2   (add_data2   ),
@@ -71,30 +71,30 @@ TJUT_SHIFT u_TJUT_SHIFT(
 //确定加法器两位参数
 wire [`DATA_WIDTH-1:0] alu_data1    = (selalu1 ? src1 : pc  );
 wire [`DATA_WIDTH-1:0] alu_data2    = (selalu2 ? src2 : imm);
-wire [`DATA_WIDTH-1:0] add_data1    = (add | sub ? alu_data1 : 32'b0);
-wire [`DATA_WIDTH-1:0] add_data2    = (add | sub ? alu_data2 : 32'b0);
+wire [`DATA_WIDTH-1:0] add_data1    = (add | sub ? alu_data1 : 8'b0);
+wire [`DATA_WIDTH-1:0] add_data2    = (add | sub ? alu_data2 : 8'b0);
 
 wire [`DATA_WIDTH-1:0] add_result;
-wire [`DATA_WIDTH-1:0] sub_result   = sub ? add_result : 32'h0;
+wire [`DATA_WIDTH-1:0] sub_result   = sub ? add_result : 8'h0;
 
 
 
 /********************逻辑运算***********************/
 //and
-wire [`DATA_WIDTH-1:0] logic_data1  = (LOGIC ? alu_data1 : 32'b0);
-wire [`DATA_WIDTH-1:0] logic_data2  = (LOGIC ? alu_data2 : 32'b0);
+wire [`DATA_WIDTH-1:0] logic_data1  = (LOGIC ? alu_data1 : 8'b0);
+wire [`DATA_WIDTH-1:0] logic_data2  = (LOGIC ? alu_data2 : 8'b0);
 
-wire [`DATA_WIDTH-1:0] and_result   = (log_and ? logic_data1 & logic_data2 : 32'h0);
+wire [`DATA_WIDTH-1:0] and_result   = (log_and ? logic_data1 & logic_data2 : 8'h0);
 //or
-wire [`DATA_WIDTH-1:0] or_result    = (log_or ? logic_data1 | logic_data2 : 32'h0);
+wire [`DATA_WIDTH-1:0] or_result    = (log_or ? logic_data1 | logic_data2 : 8'h0);
 //xor
-wire [`DATA_WIDTH-1:0] xor_result   = (log_xor ? logic_data1 ^ logic_data2 : 32'h0);
+wire [`DATA_WIDTH-1:0] xor_result   = (log_xor ? logic_data1 ^ logic_data2 : 8'h0);
 
 wire [`DATA_WIDTH-1:0] log_result;
 `define LOG_XOR 3'b001
 `define LOG_OR  3'b010
 `define LOG_AND 3'b100
-MuxKeyWithDefault #(6'd3, 6'd3, 6'd32) u2_MuxKeyWithDefault(log_result, log_op, 32'b0, {
+MuxKeyWithDefault #(4'd3, 4'd3, 4'd8) u2_MuxKeyWithDefault(log_result, log_op, 8'b0, {
     `LOG_XOR     , xor_result,
     `LOG_OR      , or_result,
     `LOG_AND     , and_result
@@ -103,21 +103,21 @@ MuxKeyWithDefault #(6'd3, 6'd3, 6'd32) u2_MuxKeyWithDefault(log_result, log_op, 
 
 
 /*********************移位运算*************************/
-wire [`DATA_WIDTH-1:0]  sft_data     = (shift ? alu_data1 : 32'h0);
-wire [`SHIFT_WIDTH-1:0] sft_num1     = (selalu2 ? {1'b0, alu_data2[4:0]} : alu_data2[5:0]);
-wire [`SHIFT_WIDTH-1:0] sft_num      = (shift ? sft_num1  : 6'b0);
+wire [`DATA_WIDTH-1:0]  sft_data     = (shift ? alu_data1 : 8'h0);
+wire [`SHIFT_WIDTH-1:0] sft_num1     = (selalu2 ? {1'b0, alu_data2[1:0]} : alu_data2[2:0]);
+wire [`SHIFT_WIDTH-1:0] sft_num      = (shift ? sft_num1  : 3'b0);
 wire [`DATA_WIDTH-1:0]  sft_result;
 
 
 
 /*********************比较运算************************/
 //确定比较器两位参数
-wire [`DATA_WIDTH-1:0] com_data1    = (compare ? src1 : 32'h0);
+wire [`DATA_WIDTH-1:0] com_data1    = (compare ? src1 : 8'h0);
 wire [`DATA_WIDTH-1:0] com_data3    = (BRANCH | (COMPARE & selalu2) ? src2 : imm);
-wire [`DATA_WIDTH-1:0] com_data2    = (compare ? com_data3 : 32'h0);
+wire [`DATA_WIDTH-1:0] com_data2    = (compare ? com_data3 : 8'h0);
 
 wire [`COM_RESULT-1:0] com_results;
-wire [`DATA_WIDTH-1:0] com_result   = {31'b0, com_lt};
+wire [`DATA_WIDTH-1:0] com_result   = {7'b0, com_lt};
 
 
 
@@ -131,11 +131,11 @@ wire [`DATA_WIDTH-1:0] lt_result    = (com_lt ? add_result : snpc);
 `define BRA_NE  4'b0010
 `define BRA_GT  4'b0100
 `define BRA_LT  4'b1000
-MuxKeyWithDefault #(6'd4, 6'd4, 6'd32) u1_MuxKeyWithDefault(bra_result, bra_op, 32'b0, {
+MuxKeyWithDefault #(4'd4, 4'd4, 4'd8) u1_MuxKeyWithDefault(bra_result, bra_op, 8'b0, {
     `BRA_EQ      , eq_result,
     `BRA_NE      , ne_result,
     `BRA_GT      , gt_result,
-    `BRA_LT      , lt_result
+    `BRA_LT       , lt_result
 });
 
 
@@ -147,7 +147,7 @@ wire [`DATA_WIDTH-1:0] imm_result   = imm;
 /*********************************选择结果***************************/
 //输出暂存
 wire [`DATA_WIDTH-1:0] ex_result;
-assign ex_out_data  = clrlsb ? (ex_result & 32'hffff_fffe) : ex_result;
+assign ex_out_data  = clrlsb ? (ex_result & 8'hfe) : ex_result;
 
 `define EX_ADD  7'b000_0001
 `define EX_SUB  7'b000_0010
@@ -158,7 +158,7 @@ assign ex_out_data  = clrlsb ? (ex_result & 32'hffff_fffe) : ex_result;
 `define EX_IMM  7'b100_0000
 
 
-MuxKeyWithDefault #(6'd7, 6'd7, 6'd32) u0_MuxKeyWithDefault(ex_result, alu_op, 32'b0, {
+MuxKeyWithDefault #(4'd7, 4'd7, 4'd8) u0_MuxKeyWithDefault(ex_result, alu_op, 8'b0, {
     `EX_ADD      , add_result,
     `EX_SUB      , sub_result,
     `EX_COM      , com_result,
