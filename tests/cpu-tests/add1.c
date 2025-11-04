@@ -1,4 +1,4 @@
-#include "trap.h"
+#include <trap.h>
 
 int add1(int a, int b) {
     char c = a + b;
