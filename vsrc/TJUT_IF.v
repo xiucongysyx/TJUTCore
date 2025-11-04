@@ -5,15 +5,14 @@ module TJUT_IF(
     input   wire    [`IFCTRL_WIDTH-1:0] if_ctrl_sig,
     input   wire    [`DATA_WIDTH-1:0]   ex_out_data,
     output  reg     [`PC_WIDTH-1:0]     pc,
-    output  wire    [`PC_WIDTH-1:0]    snpc, 
+    output  reg    [`PC_WIDTH-1:0]    snpc, 
     output  reg   [`INST_WIDTH-1:0]   inst
 );
 
 // IF 控制信号解码 下一个PC信号
 wire                                            selpc = if_ctrl_sig[0];
-assign                                        snpc  = pc + 8'h4;
-reg  [`PC_WIDTH-1:0]         dnpc;
-reg  [`PC_WIDTH-1:0]         expc;
+wire [`PC_WIDTH-1:0]         dnpc =selpc ? ex_out_data : snpc;              
+reg [`PC_WIDTH-1:0]           instpc;
 
 
 
@@ -40,8 +39,8 @@ always @(posedge clk) begin
         inst_byte[3] <= 8'h00;
         inst <= 32'h00000000;
         pc <= 8'h00;
-        dnpc <= 8'h00;
-        expc <= 8'h00;
+        snpc <= 8'h00;
+        instpc <= 8'h00;
     end else begin
         case(inst_seg_state) 
             INST_SEG_DEFAULT: begin
@@ -50,22 +49,24 @@ always @(posedge clk) begin
             INST_SEG_ONE: begin
                 cpu_pmem_read(dnpc, inst_byte[0]); 
                 inst_seg_state <= INST_SEG_TWO;
+                instpc <= dnpc + 8'h1;
             end
             INST_SEG_TWO: begin
-                cpu_pmem_read(dnpc+8'h1, inst_byte[1]);
+                cpu_pmem_read(instpc , inst_byte[1]);
                 inst_seg_state <= INST_SEG_THREE;
-                expc <= ex_out_data;
+                instpc <= instpc + 8'h1;
             end
             INST_SEG_THREE: begin
-                cpu_pmem_read(dnpc+8'h2, inst_byte[2]);
+                cpu_pmem_read(instpc, inst_byte[2]);
                 inst_seg_state <= INST_SEG_FOUR;
-                pc <= dnpc;
+                pc <= selpc ? dnpc : snpc;
+                instpc <= instpc + 8'h1;
             end
             INST_SEG_FOUR: begin
-                cpu_pmem_read(dnpc+8'h3, inst_byte[3]);
+                cpu_pmem_read(instpc, inst_byte[3]);
                 inst <= {inst_byte[3], inst_byte[2], inst_byte[1], inst_byte[0]};
                 inst_seg_state <= INST_SEG_ONE;
-                dnpc <= selpc ? expc : snpc;
+                snpc <= pc + 8'h4;
             end
             default: begin
                 inst_seg_state <= INST_SEG_DEFAULT;
