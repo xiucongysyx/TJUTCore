@@ -26,7 +26,7 @@ parameter INST_SEG_FOUR = 4'b0100;
 reg [`INST_SEG-1:0] inst_seg_state;
 reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
 
-import "DPI-C" function void cpu_pmem_read(
+import "DPI-C" function void cpu_imem_read(
     input byte raddr, output byte rdata
 );
 
@@ -47,23 +47,23 @@ always @(posedge clk) begin
                 inst_seg_state <= INST_SEG_ONE;
             end
             INST_SEG_ONE: begin
-                cpu_pmem_read(dnpc, inst_byte[0]); 
+                cpu_imem_read(dnpc, inst_byte[0]); 
                 inst_seg_state <= INST_SEG_TWO;
                 instpc <= dnpc + 8'h1;
             end
             INST_SEG_TWO: begin
-                cpu_pmem_read(instpc , inst_byte[1]);
+                cpu_imem_read(instpc , inst_byte[1]);
                 inst_seg_state <= INST_SEG_THREE;
                 instpc <= instpc + 8'h1;
             end
             INST_SEG_THREE: begin
-                cpu_pmem_read(instpc, inst_byte[2]);
+                cpu_imem_read(instpc, inst_byte[2]);
                 inst_seg_state <= INST_SEG_FOUR;
                 pc <= selpc ? dnpc : snpc;
                 instpc <= instpc + 8'h1;
             end
             INST_SEG_FOUR: begin
-                cpu_pmem_read(instpc, inst_byte[3]);
+                cpu_imem_read(instpc, inst_byte[3]);
                 inst <= {inst_byte[3], inst_byte[2], inst_byte[1], inst_byte[0]};
                 inst_seg_state <= INST_SEG_ONE;
                 snpc <= pc + 8'h4;

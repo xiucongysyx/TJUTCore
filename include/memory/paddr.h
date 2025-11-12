@@ -8,11 +8,13 @@
 #define RESET_VECTOR PMEM_LEFT
 
 uint8_t* guest_to_host(paddr_t paddr);
+uint8_t* guest_to_host_imem(paddr_t paddr);
 
 static inline bool in_pmem(paddr_t addr) {
   return addr - CONFIG_MBASE < CONFIG_MSIZE;
 }
 
 word_t paddr_read(paddr_t addr, int len);
+word_t iaddr_read(paddr_t addr, int len);
 
 #endif

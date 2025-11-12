@@ -5,6 +5,7 @@
 void init_rand();
 void init_log(const char *log_file);
 void init_mem();
+void init_imem();
 void init_sdb();
 void init_isa();
 void init_disasm(const char *triple);
@@ -34,7 +35,7 @@ static long load_img() {
   Log("The image is %s, size = %ld", SLASH(img_file, 4), size);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+  int ret = fread(guest_to_host_imem(RESET_VECTOR), size, 1, fp);
   assert(ret == 1);
 
   fclose(fp);
@@ -82,6 +83,7 @@ void init_monitor(int argc, char *argv[]) {
 
   // 初始化mem
   init_mem();
+  init_imem();
 
   long img_size = load_img();
 

@@ -4,9 +4,11 @@
 #include <common.h>
 
 static uint8_t *pmem = NULL;
+static uint8_t *imem = NULL;
 extern FILE *mtrace_fp;
 
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
+uint8_t* guest_to_host_imem(paddr_t paddr) { return imem + paddr - CONFIG_MBASE; }
 
 #ifdef CONFIG_MTRACE
 static void paddr_mtrace(vaddr_t addr, paddr_t data, char *status) {
@@ -18,7 +20,7 @@ static void paddr_mtrace(vaddr_t addr, paddr_t data, char *status) {
 #endif
 
 static void out_of_bound(paddr_t addr) {
-  printf("npc:address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD "\n", addr, PMEM_LEFT, PMEM_RIGHT, *cpu.pc);
+  printf("npc:address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD "\n", addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
   npc_state.state = NPC_ABORT;
 }
 
@@ -57,8 +59,20 @@ extern "C" void cpu_pmem_write(paddr_t waddr, char wdata) {
   out_of_bound(waddr);
 }
 
+extern "C" void cpu_imem_read(paddr_t iaddr, char *idata) {
+  if (likely(in_pmem(iaddr))) {
+    *idata = host_read(guest_to_host_imem(iaddr), 1);
+    return;
+  }
+}
+
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
+  return ret;
+}
+
+static word_t imem_read(paddr_t addr, int len) {
+  word_t ret = host_read(guest_to_host_imem(addr), len);
   return ret;
 }
 
@@ -68,8 +82,20 @@ void init_mem() {
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 
+void init_imem() {
+  imem = (uint8_t*)(malloc(CONFIG_MSIZE));
+  assert(imem);
+  Log("instruction memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
+}
+
 word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
+  out_of_bound(addr);
+  return 0;
+}
+
+word_t iaddr_read(paddr_t addr, int len) {
+  if(likely(in_pmem(addr))) return imem_read(addr, len);
   out_of_bound(addr);
   return 0;
 }

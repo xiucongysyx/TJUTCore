@@ -9,6 +9,14 @@ VTJUT_TOP* top = NULL;
 static VerilatedContext* context = NULL;
 IFDEF(CONFIG_VCD, static VerilatedVcdC* tfp = NULL);
 
+typedef struct {
+  data_t *pc;
+  data_t *snpc;
+  data_t *dnpc;
+} TPU_PC;
+
+static TPU_PC tpu = {};
+
 static void halt_step_wave() {
   top->eval();
   context->timeInc(1);
@@ -27,8 +35,12 @@ void isa_exec_once() {
   //one clk
   top->clk = !top->clk;
   halt_step_wave();
-  cpu.inst_ref = inst_fetch(*cpu.pc, 4);
   halt_step_wave();
+  cpu.pc = *tpu.pc;
+  cpu.dnpc = *tpu.dnpc;
+  cpu.snpc = *tpu.snpc;
+  cpu.inst_ref = inst_fetch(cpu.pc, 4);
+//  cpu.inst_ref = *cpu.inst_act;
   top->clk = !top->clk;
   halt_step_wave();
   halt_step_wave();
@@ -59,14 +71,14 @@ void isa_exec_once() {
   halt_step_wave();
 
   IFDEF(CONFIG_MTRACE, cpu.memflag = false);
-  cpu.snpc = *cpu.pc + 4;
 }
 
 static void restart() {
   int i;
   cpu.gpr = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_WB__DOT__u_TJUT_REGFILE__DOT__rf;
-  cpu.pc = (data_t*)&top->pc;
-  cpu.dnpc = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
+  tpu.pc = (data_t*)&top->pc;
+  tpu.dnpc = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
+  tpu.snpc = (data_t*)&top->rootp->TJUT_TOP__DOT__snpc;
   cpu.breakpoint = (bool*)&top->breakpoint;
   cpu.invalid = (bool*)&top->invalid;
   cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;

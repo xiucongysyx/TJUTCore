@@ -6,9 +6,9 @@
 // cpu_state
 typedef struct {
   data_t *gpr;
-  data_t *pc;
+  data_t pc;
   data_t snpc;
-  data_t *dnpc;
+  data_t dnpc;
   inst_t *inst_act;
   inst_t inst_ref;
   bool *breakpoint;
