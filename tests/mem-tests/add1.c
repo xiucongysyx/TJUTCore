@@ -9,10 +9,12 @@ uint8_t if_else(char n) {
 }
 
 int main() {
+    char i=1;
     check(if_else(1) == 10);
     check(if_else(2) == 0);
     check(if_else(7) == 40);
     check(if_else(13) == 40);
+    putch(i);
 
     return 0;
 }

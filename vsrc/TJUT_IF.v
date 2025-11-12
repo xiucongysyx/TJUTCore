@@ -4,15 +4,18 @@ module TJUT_IF(
     input   wire                        rst,
     input   wire    [`IFCTRL_WIDTH-1:0] if_ctrl_sig,
     input   wire    [`DATA_WIDTH-1:0]   ex_out_data,
+    input   wire    [`DATA_WIDTH-1:0]  inst_seg_data,
     output  reg     [`PC_WIDTH-1:0]     pc,
     output  reg    [`PC_WIDTH-1:0]    snpc, 
+    output wire   [`PC_WIDTH-1:0]    instpc,
     output  reg   [`INST_WIDTH-1:0]   inst
 );
 
 // IF 控制信号解码 下一个PC信号
 wire                                            selpc = if_ctrl_sig[0];
 wire [`PC_WIDTH-1:0]         dnpc =selpc ? ex_out_data : snpc;              
-reg [`PC_WIDTH-1:0]           instpc;
+reg [`PC_WIDTH-1:0]           instpc_reg;
+assign instpc = inst_seg_state == INST_SEG_ONE ? dnpc : instpc_reg;
 
 
 
@@ -25,10 +28,6 @@ parameter INST_SEG_FOUR = 4'b0100;
 
 reg [`INST_SEG-1:0] inst_seg_state;
 reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
-
-import "DPI-C" function void cpu_imem_read(
-    input byte raddr, output byte rdata
-);
 
 always @(posedge clk) begin
     if(rst) begin
@@ -47,23 +46,23 @@ always @(posedge clk) begin
                 inst_seg_state <= INST_SEG_ONE;
             end
             INST_SEG_ONE: begin
-                cpu_imem_read(dnpc, inst_byte[0]); 
+                inst_byte[0] <= inst_seg_data;
                 inst_seg_state <= INST_SEG_TWO;
-                instpc <= dnpc + 8'h1;
+                instpc_reg <= dnpc + 8'h1;
             end
             INST_SEG_TWO: begin
-                cpu_imem_read(instpc , inst_byte[1]);
+                inst_byte[1] <= inst_seg_data;
                 inst_seg_state <= INST_SEG_THREE;
-                instpc <= instpc + 8'h1;
+                instpc_reg <= instpc_reg + 8'h1;
             end
             INST_SEG_THREE: begin
-                cpu_imem_read(instpc, inst_byte[2]);
+                inst_byte[2] <= inst_seg_data;
                 inst_seg_state <= INST_SEG_FOUR;
                 pc <= selpc ? dnpc : snpc;
-                instpc <= instpc + 8'h1;
+                instpc_reg <= instpc_reg + 8'h1;
             end
             INST_SEG_FOUR: begin
-                cpu_imem_read(instpc, inst_byte[3]);
+                inst_byte[3] <= inst_seg_data;
                 inst <= {inst_byte[3], inst_byte[2], inst_byte[1], inst_byte[0]};
                 inst_seg_state <= INST_SEG_ONE;
                 snpc <= pc + 8'h4;

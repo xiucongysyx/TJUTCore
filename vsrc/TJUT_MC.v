@@ -3,34 +3,24 @@ module TJUT_MC(
   input  [`MCCTRL_WIDTH-1:0]  mc_ctrl_sig,
   input  [`DATA_WIDTH-1:0]    ex_out_data,
   input  [`DATA_WIDTH-1:0]    src2,
-  output [`DATA_WIDTH-1:0]    memregdata
+  input  [`DATA_WIDTH-1:0]    instpc,
+  output [`DATA_WIDTH-1:0]    memregdata,
+  output [`DATA_WIDTH-1:0]    inst_seg_data
 );
 
 /*****************ex_out_sig解码*****************/
 wire                      memren      = mc_ctrl_sig[0];
 wire                      memwen      = mc_ctrl_sig[1];
-reg  [`DATA_WIDTH-1:0]    rdata;
-
 assign memregdata = rdata;
 
-import "DPI-C" function void cpu_pmem_read(
-  input byte raddr, output byte rdata
+TJUT_MEM u_TJUT_MEM(
+    .instpc   (instpc),
+    .inst_seg_data(inst_seg_data),
+    .addr     (ex_out_data),
+    .wdata    (src2      ),
+    .rdata    (memregdata     ),
+    .memren   (memren    ),
+    .memwen   (memwen    )
 );
 
-import "DPI-C" function void cpu_pmem_write(
-  input byte waddr, input byte wdata
-);
-
-always @(*) begin 
-  if(memren) begin
-    cpu_pmem_read(ex_out_data, rdata);
-  end
-  else if(memwen) begin
-    cpu_pmem_write(ex_out_data, src2);
-    rdata = 8'b0;
-  end
-  else begin
-    rdata = 8'b0;
-  end
-end
 endmodule
