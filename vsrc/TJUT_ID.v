@@ -190,11 +190,11 @@ assign wb_ctrl_sig  = {memregren, regpc, regwen, regrensrc1, regrensrc2};
 
 
 /*********************mc信号编码************************/
-wire memwen         = sb;
-wire memren          = lb;
+wire memwen         = sb | sh | sw;
+wire memren          = lb | lh | lhu | lw;
 
 // 读寄存器2的值
-wire memregsrc2     = sb;
+wire memregsrc2     = sb | sh | sw;
 
 assign mc_ctrl_sig  = {memwen, memren};
 
