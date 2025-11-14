@@ -1,7 +1,7 @@
 `include "define.v"
 module TJUT_TOP(
     input   wire                        clk,
-    input   wire                        rst,
+    input   wire                        rstn,
     output  wire                        breakpoint,
     output  wire                        invalid,
     output  wire    [`PC_WIDTH-1:0]     pc  
@@ -28,7 +28,7 @@ wire [`MCCTRL_WIDTH-1:0]    mc_ctrl_sig;
 
 TJUT_IF u_TJUT_IF(
     .clk        (clk         ),
-    .rst        (rst         ),
+    .rstn      (rstn       ),
     .if_ctrl_sig(if_ctrl_sig ),
     .ex_out_data(ex_out_data ),
     .pc         (pc          ),
@@ -82,7 +82,7 @@ TJUT_MC u_TJUT_MC(
 
 TJUT_DIV4 u_TJUT_DIV4(
     .clk    (clk   ),
-    .rst    (rst    ),
+    .rstn   (rstn  ),
     .clk_div4(clk_div4)
 );
 

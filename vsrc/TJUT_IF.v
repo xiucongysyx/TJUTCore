@@ -1,7 +1,7 @@
 `include "define.v"
 module TJUT_IF(
     input   wire                        clk,
-    input   wire                        rst,
+    input   wire                        rstn,
     input   wire    [`IFCTRL_WIDTH-1:0] if_ctrl_sig,
     input   wire    [`DATA_WIDTH-1:0]   ex_out_data,
     input   wire    [`DATA_WIDTH-1:0]  inst_seg_data,
@@ -30,7 +30,7 @@ reg [`INST_SEG-1:0] inst_seg_state;
 reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
 
 always @(posedge clk) begin
-    if(rst) begin
+    if(!rstn) begin
         inst_seg_state <= INST_SEG_DEFAULT;
         inst_byte[0] <= 8'h00;
         inst_byte[1] <= 8'h00;
