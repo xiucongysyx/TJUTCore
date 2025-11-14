@@ -2,11 +2,13 @@
 module TJUT_UART_CTRL(
     input                clk,
     input               rstn,
+    input               instload,
 
     input [`MCCTRL_WIDTH-1:0]   mc_ctrl_sig,
 
     input              uart_rxd,
     output           uart_txd,
+    output           rx_done,
 
     input     [`DATA_WIDTH-1:0]          ex_out_data, //addr
     input    [`DATA_WIDTH-1:0]            src2, //uart_din
@@ -56,7 +58,7 @@ end
 always @(posedge clk) begin
     if(!rstn) begin
         memuartdata <= 8'b0;
-    end else if(ex_out_data == 8'hFE && mc_ctrl_sig[0]) begin
+    end else if((ex_out_data == 8'hFE && mc_ctrl_sig[0]) || instload) begin
         memuartdata <= uart_data;
     end else begin
         memuartdata <= 8'b0;
@@ -122,7 +124,8 @@ TJUT_UART_RECV u_TJUT_UART_RECV(
     .clk      (clk      ),
     .rstn     (rstn     ),
     .uart_rxd (uart_rxd ),
-    .uart_data (uart_data )
+    .uart_data (uart_data ),
+    .rx_done (rx_done)
 );
 
 TJUT_UART_SEND u_TJUT_UART_SEND(

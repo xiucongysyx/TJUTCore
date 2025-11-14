@@ -19,7 +19,7 @@ assign rdata = memren ? mem[addr] : 8'b0;
 
 always @(posedge clk_div4) begin
     if(memwen) begin
-       mem[waddr]  <= wdata;
+       mem[addr]  <= wdata;
     end
 end
 

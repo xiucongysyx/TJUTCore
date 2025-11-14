@@ -3,7 +3,8 @@ module TJUT_UART_RECV(
     input                   clk,
     input                   rstn,
     input                   uart_rxd,
-    output  reg [7:0]      uart_data
+    output  reg [7:0]      uart_data,
+    output  reg              rx_done
 );
 
 localparam  BPS_CNT = 434;
@@ -65,7 +66,7 @@ always @(posedge clk) begin
             bps_cnt <= bps_cnt + 1'b1;
             rx_cnt <= rx_cnt;
         end else begin
-            bps_cnt <= bps_cnt;
+            bps_cnt <= 9'b0;
             rx_cnt <= rx_cnt + 1'b1;
         end
     end else begin
@@ -101,10 +102,13 @@ end
 always @(posedge clk) begin
     if(!rstn) begin
         uart_data <= 8'd0;
-    end else if(rx_cnt == 4'd9) begin
+        rx_done <= 1'b0;
+    end else if(rx_cnt == 4'd9 && bps_cnt == BPS_CNT -1) begin
         uart_data <= tx_data;
+        rx_done <= 1'b1;
     end else begin
         uart_data <= uart_data;
+        rx_done <= 1'b0;
     end
 end
 

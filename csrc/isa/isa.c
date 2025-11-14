@@ -30,6 +30,11 @@ void setp_and_dump_wave_half_clk() {
   halt_step_wave();
 }
 
+void setp_and_dump_wave() {
+  setp_and_dump_wave_half_clk();
+  setp_and_dump_wave_half_clk();
+}
+
 void isa_exec_once() {
   // 现在是运行4个clk周期完成一次指令的取指
   //one clk
@@ -76,18 +81,20 @@ void isa_exec_once() {
 static void restart() {
   int i;
   cpu.gpr = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_WB__DOT__u_TJUT_REGFILE__DOT__rf;
-  tpu.pc = (data_t*)&top->pc;
+  tpu.pc = (data_t*)&top->rootp->TJUT_TOP__DOT__pc;
   tpu.dnpc = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
   tpu.snpc = (data_t*)&top->rootp->TJUT_TOP__DOT__snpc;
   cpu.breakpoint = (bool*)&top->breakpoint;
   cpu.invalid = (bool*)&top->invalid;
   cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;
-  top->rst = 1;
+  top->rstn = 0;
   top->clk = 0;
+  top->instload = 0;
+  top->uart_rxd = 1;
   for(i = 6; i > 0; i--) {
     setp_and_dump_wave_half_clk();
   }
-  top->rst = 0;
+  top->rstn = 1;
 
 }
 
@@ -100,6 +107,50 @@ void init_first_pc() {
 
 void isa_exit() {
   IFDEF(CONFIG_VCD, tfp->close());
+}
+
+void uart_send(char udata){
+  int i;
+  int j;
+
+ for(i=0; i<10; i++) {
+  switch (i) {
+    case 0: top->uart_rxd = 0;break;
+    case 1: top->uart_rxd = (udata & 0x01) == 0x01;break;
+    case 2: top->uart_rxd = (udata & 0x02) == 0x02;break;
+    case 3: top->uart_rxd = (udata & 0x04) == 0x04;break;
+    case 4: top->uart_rxd = (udata & 0x08) == 0x08;break;
+    case 5: top->uart_rxd = (udata & 0x10) == 0x10;break;
+    case 6: top->uart_rxd = (udata & 0x20) == 0x20;break;
+    case 7: top->uart_rxd = (udata & 0x40) == 0x40;break;
+    case 8: top->uart_rxd = (udata & 0x80) == 0x80;break;
+    case 9: top->uart_rxd = 1;break;
+  }
+  for(j=434; j>0; j--) {
+    setp_and_dump_wave();
+  }
+ } 
+}
+
+void init_inst(){
+  top->instload = 1;
+  setp_and_dump_wave();
+  setp_and_dump_wave();
+  setp_and_dump_wave();
+  int i;
+  data_t pcaddr=0x00;
+  for(i=251; i>0; i--) {
+    uart_send((char)inst_fetch(pcaddr, 1));
+    pcaddr++;
+  }
+  top->instload = 0;
+
+  top->rstn = 0;
+  setp_and_dump_wave();
+  setp_and_dump_wave();
+  setp_and_dump_wave();
+  top->rstn = 1;
+
 }
 
 void init_isa() {

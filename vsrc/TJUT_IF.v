@@ -2,6 +2,7 @@
 module TJUT_IF(
     input   wire                        clk,
     input   wire                        rstn,
+    input  wire                         instload,
     input   wire    [`IFCTRL_WIDTH-1:0] if_ctrl_sig,
     input   wire    [`DATA_WIDTH-1:0]   ex_out_data,
     input   wire    [`DATA_WIDTH-1:0]  inst_seg_data,
@@ -13,11 +14,9 @@ module TJUT_IF(
 
 // IF 控制信号解码 下一个PC信号
 wire                                            selpc = if_ctrl_sig[0];
-wire [`PC_WIDTH-1:0]         dnpc =selpc ? ex_out_data : snpc;              
+wire [`PC_WIDTH-1:0]         dnpc = ~instload ? (selpc ? ex_out_data : snpc) : 8'h0;              
 reg [`PC_WIDTH-1:0]           instpc_reg;
-assign instpc = inst_seg_state == INST_SEG_ONE ? dnpc : instpc_reg;
-
-
+assign instpc = ~instload ? inst_seg_state == INST_SEG_ONE ? dnpc : instpc_reg : 8'h0;
 
 // 指令读取
 parameter INST_SEG_DEFAULT = 4'b0000;
@@ -30,7 +29,7 @@ reg [`INST_SEG-1:0] inst_seg_state;
 reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
 
 always @(posedge clk) begin
-    if(!rstn) begin
+    if(!rstn || instload) begin
         inst_seg_state <= INST_SEG_DEFAULT;
         inst_byte[0] <= 8'h00;
         inst_byte[1] <= 8'h00;
@@ -39,7 +38,6 @@ always @(posedge clk) begin
         inst <= 32'h00000000;
         pc <= 8'h00;
         snpc <= 8'h00;
-        instpc <= 8'h00;
     end else begin
         case(inst_seg_state) 
             INST_SEG_DEFAULT: begin
@@ -58,7 +56,7 @@ always @(posedge clk) begin
             INST_SEG_THREE: begin
                 inst_byte[2] <= inst_seg_data;
                 inst_seg_state <= INST_SEG_FOUR;
-                pc <= selpc ? dnpc : snpc;
+                pc <=  selpc ? dnpc : snpc;
                 instpc_reg <= instpc_reg + 8'h1;
             end
             INST_SEG_FOUR: begin

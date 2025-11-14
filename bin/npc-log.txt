@@ -1,3 +1,3 @@
 [1;34m[csrc/utils/log.c:55 init_log] Log is written to bin/npc-log.txt[0m
 [1;34m[csrc/memory/paddr.c:82 init_mem] physical memory area [0x00000000, 0x000000fe][0m
-[1;34m[csrc/monitor/monitor.c:34 load_img] The image is bin/add-riscv32e-npc.bin, size = 576[0m
+[1;34m[csrc/monitor/monitor.c:35 load_img] The image is bin/add-riscv32e-npc.bin, size = 576[0m

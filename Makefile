@@ -81,7 +81,7 @@ run: compile
 
 # gdb
 gdb: $(COMPILE)
-	$(Q) $(GDB) -s $(NPC_BIN) --args $(NPC_EXEC)	
+	$(Q) $(GDB) -s $(NPC_BIN) --args $(NPC_EXEC) -c core.1215191
 
 # wave
 wave: 

@@ -2,9 +2,11 @@
 module TJUT_TOP(
     input   wire                        clk,
     input   wire                        rstn,
+    input  wire                         instload,
     output  wire                        breakpoint,
     output  wire                        invalid,
-    output  wire    [`PC_WIDTH-1:0]     pc  
+    input wire                         uart_rxd,
+    output wire                         uart_txd
 );
 
 wire                                            clk_div4;
@@ -25,15 +27,24 @@ wire [`WBCTRL_WIDTH-1:0]    wb_ctrl_sig;
 wire [`IFCTRL_WIDTH-1:0]    if_ctrl_sig;
 wire [`MCCTRL_WIDTH-1:0]    mc_ctrl_sig;
 
+wire [`DATA_WIDTH-1:0] memuartdata;
+wire rx_done;
+
+wire [`PC_WIDTH-1:0] pc;
+wire [`PC_WIDTH-1:0] instpc;
+wire [`DATA_WIDTH-1:0] inst_seg_data;
 
 TJUT_IF u_TJUT_IF(
-    .clk        (clk         ),
-    .rstn      (rstn       ),
-    .if_ctrl_sig(if_ctrl_sig ),
-    .ex_out_data(ex_out_data ),
-    .pc         (pc          ),
-    .snpc       (snpc        ),
-    .inst       (inst        )
+    .clk           (clk           ),
+    .rstn          (rstn          ),
+    .instload (instload),
+    .if_ctrl_sig   (if_ctrl_sig   ),
+    .ex_out_data   (ex_out_data   ),
+    .inst_seg_data (inst_seg_data ),
+    .pc            (pc            ),
+    .snpc          (snpc          ),
+    .instpc        (instpc        ),
+    .inst          (inst          )
 );
 
 TJUT_ID u_TJUT_ID(
@@ -74,11 +85,32 @@ TJUT_WB u_TJUT_WB(
 );
 
 TJUT_MC u_TJUT_MC(
+    .clk_div4      (clk_div4      ),
+    .rstn          (rstn          ),
+    .mc_ctrl_sig   (mc_ctrl_sig   ),
+    .ex_out_data   (ex_out_data   ),
+    .src2          (src2          ),
+    .instpc        (instpc        ),
+    .memregdata    (memregdata    ),
+    .inst_seg_data (inst_seg_data ),
+    .instload      (instload      ),
+    .memuartdata   (memuartdata   ),
+    .rx_done       (rx_done       )
+);
+
+TJUT_UART_CTRL u_TJUT_UART_CTRL(
+    .clk         (clk         ),
+    .rstn        (rstn        ),
+    .instload (instload),
     .mc_ctrl_sig (mc_ctrl_sig ),
+    .uart_rxd    (uart_rxd    ),
+    .uart_txd    (uart_txd    ),
+    .rx_done     (rx_done     ),
     .ex_out_data (ex_out_data ),
     .src2        (src2        ),
-    .memregdata  (memregdata  )
+    .memuartdata (memuartdata )
 );
+
 
 TJUT_DIV4 u_TJUT_DIV4(
     .clk    (clk   ),

@@ -5,11 +5,11 @@
 void init_rand();
 void init_log(const char *log_file);
 void init_mem();
-void init_imem();
 void init_sdb();
 void init_isa();
 void init_disasm(const char *triple);
 void init_first_pc();
+void init_inst();
 
 static void welcome() {
   printf("Welcome to riscv32-npc!\n");
@@ -35,7 +35,7 @@ static long load_img() {
   Log("The image is %s, size = %ld", SLASH(img_file, 4), size);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host_imem(RESET_VECTOR), size, 1, fp);
+  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
   assert(ret == 1);
 
   fclose(fp);
@@ -83,9 +83,10 @@ void init_monitor(int argc, char *argv[]) {
 
   // 初始化mem
   init_mem();
-  init_imem();
 
-  long img_size = load_img();
+ long img_size = load_img();
+
+ init_inst();
 
   init_sdb();
 
