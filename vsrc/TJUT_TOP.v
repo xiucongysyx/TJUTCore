@@ -76,6 +76,7 @@ TJUT_WB u_TJUT_WB(
     .ex_out_data(ex_out_data),
     .snpc       (snpc       ),
     .memregdata (memregdata ),
+    .memuartdata(memuartdata),
     .adder_rd   (adder_rd   ),
     .adder_src1 (adder_src1 ),
     .adder_src2 (adder_src2 ),

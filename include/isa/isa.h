@@ -9,8 +9,10 @@ typedef struct {
   data_t pc;
   data_t snpc;
   data_t dnpc;
+  data_t *mem;
   inst_t *inst_act;
   inst_t inst_ref;
+  long instlong;
   bool *breakpoint;
   bool *invalid;
   IFDEF(CONFIG_MTRACE, bool memflag);

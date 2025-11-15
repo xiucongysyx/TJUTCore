@@ -9,10 +9,17 @@ VTJUT_TOP* top = NULL;
 static VerilatedContext* context = NULL;
 IFDEF(CONFIG_VCD, static VerilatedVcdC* tfp = NULL);
 
+void uart_recv();
+
+
 typedef struct {
   data_t *pc;
   data_t *snpc;
   data_t *dnpc;
+  char udata;
+  int bpscnt;
+  int udatacnt;
+  int udataflag;
 } TPU_PC;
 
 static TPU_PC tpu = {};
@@ -38,42 +45,32 @@ void setp_and_dump_wave() {
 void isa_exec_once() {
   // 现在是运行4个clk周期完成一次指令的取指
   //one clk
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
+  if(top->instload == 0) {top->uart_rxd = top->uart_txd;};
+  setp_and_dump_wave_half_clk();
   cpu.pc = *tpu.pc;
   cpu.dnpc = *tpu.dnpc;
   cpu.snpc = *tpu.snpc;
   cpu.inst_ref = inst_fetch(cpu.pc, 4);
 //  cpu.inst_ref = *cpu.inst_act;
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
+  setp_and_dump_wave_half_clk();
+ uart_recv();
 
 
   //second clk
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
+  setp_and_dump_wave_half_clk();
+  setp_and_dump_wave_half_clk();
+ uart_recv();
 
   //third clk
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
+  setp_and_dump_wave_half_clk();
+  setp_and_dump_wave_half_clk();
+ uart_recv();
 
   //fourth clk
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
-  top->clk = !top->clk;
-  halt_step_wave();
-  halt_step_wave();
+  setp_and_dump_wave_half_clk();
+  setp_and_dump_wave_half_clk();
+ uart_recv();
+
 
   IFDEF(CONFIG_MTRACE, cpu.memflag = false);
 }
@@ -87,10 +84,15 @@ static void restart() {
   cpu.breakpoint = (bool*)&top->breakpoint;
   cpu.invalid = (bool*)&top->invalid;
   cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;
+  cpu.mem = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_MC__DOT__u_TJUT_MEM__DOT__dmem;
   top->rstn = 0;
   top->clk = 0;
   top->instload = 0;
   top->uart_rxd = 1;
+  tpu.bpscnt = 0;
+  tpu.udata = 0;
+  tpu.udataflag = 0;
+  tpu.udatacnt = 0;
   for(i = 6; i > 0; i--) {
     setp_and_dump_wave_half_clk();
   }
@@ -132,6 +134,36 @@ void uart_send(char udata){
  } 
 }
 
+void uart_recv(){
+  if(top->uart_txd == 0 && tpu.udataflag == 0) {
+    tpu.udataflag = 1;
+  }
+  if(tpu.udataflag == 1) {
+    tpu.bpscnt = tpu.bpscnt + 1;
+    if(tpu.bpscnt == 220) {
+      switch (tpu.udatacnt) { 
+        case 1: if(top->uart_txd) {tpu.udata =tpu.udata | 0x01;} break;
+        case 2: if(top->uart_txd) {tpu.udata =tpu.udata | 0x02;} break;
+        case 3: if(top->uart_txd) {tpu.udata =tpu.udata | 0x04;} break;
+        case 4: if(top->uart_txd) {tpu.udata =tpu.udata | 0x08;} break;
+        case 5: if(top->uart_txd) {tpu.udata =tpu.udata | 0x10;} break;
+        case 6: if(top->uart_txd) {tpu.udata =tpu.udata | 0x20;} break;
+        case 7: if(top->uart_txd) {tpu.udata =tpu.udata | 0x40;} break;
+        case 8: if(top->uart_txd) {tpu.udata =tpu.udata | 0x80;} break;
+        case 9: {
+          printf("uart_rec=%c", tpu.udata); 
+          if(tpu.bpscnt == 400) {
+            tpu.udataflag = 0;
+            tpu.udatacnt = 0;
+            tpu.udata = 0;
+            tpu.bpscnt = 0;
+          }
+        }
+      }
+    }
+  }
+}
+
 void init_inst(){
   top->instload = 1;
   setp_and_dump_wave();
@@ -150,8 +182,9 @@ void init_inst(){
   setp_and_dump_wave();
   setp_and_dump_wave();
   top->rstn = 1;
-
+  
 }
+
 
 void init_isa() {
   context = new VerilatedContext; 

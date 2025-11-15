@@ -103,7 +103,7 @@ always @(posedge clk) begin
     if(!rstn) begin
         uart_data <= 8'd0;
         rx_done <= 1'b0;
-    end else if(rx_cnt == 4'd9 && bps_cnt == BPS_CNT -1) begin
+    end else if(rx_cnt == 4'd9) begin
         uart_data <= tx_data;
         rx_done <= 1'b1;
     end else begin

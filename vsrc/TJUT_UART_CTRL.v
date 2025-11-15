@@ -58,7 +58,7 @@ end
 always @(posedge clk) begin
     if(!rstn) begin
         memuartdata <= 8'b0;
-    end else if((ex_out_data == 8'hFE && mc_ctrl_sig[0]) || instload) begin
+    end else if(ex_out_data == 8'hFE && mc_ctrl_sig[0] || instload) begin
         memuartdata <= uart_data;
     end else begin
         memuartdata <= 8'b0;

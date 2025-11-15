@@ -1,6 +1,8 @@
 #include <common.h>
 #include <memory/paddr.h>
 #include <getopt.h>
+#include <isa/isa.h>
+#include <cpu/cpu.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -31,6 +33,8 @@ static long load_img() {
 
   fseek(fp, 0, SEEK_END);
   long size = ftell(fp);
+  cpu.instlong = size;
+
 
   Log("The image is %s, size = %ld", SLASH(img_file, 4), size);
 

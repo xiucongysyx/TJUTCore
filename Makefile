@@ -85,6 +85,6 @@ gdb: $(COMPILE)
 
 # wave
 wave: 
-	$(GTKWAVE) ./build/npc_wave.vcd
+	$(GTKWAVE) ./build/npc_wave.vcd &
 
 .PHONY: run gdb wave compile

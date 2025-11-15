@@ -88,9 +88,9 @@ static int cmd_x(char *args) {
     n = atoi(N);
     expr = strtol(EXPR, NULL, 16);
     for(int i = 0; i < n; i++) {
-      memory = paddr_read(expr, 4);
+      memory = *(cpu.mem+expr);
       printf("0x%x: %-10x %-10d\n", expr, memory, memory);
-      expr += 4;
+      expr += 1;
     }
   }
   else {
@@ -164,6 +164,7 @@ static int cmd_info(char *args) {
   }
   if(strcmp(arg, "r") == 0) {isa_reg_display();}
   else if(strcmp(arg, "w") ==0) {wp_display();}
+  else if(strcmp(arg, "i") == 0) {inst_display();} 
   else {
     printf("USGE:Using \'info r\' to print reg or using \'info w\' to print watch point\n");
   }

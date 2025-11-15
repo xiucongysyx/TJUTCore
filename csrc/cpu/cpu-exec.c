@@ -48,14 +48,14 @@ static void exec_once() {
   p += snprintf(p, sizeof(cpu.logbuf), FMT_WORD ":", cpu.pc);
   int ilen = cpu.snpc - cpu.pc;
   int i;
-  uint8_t *inst = (uint8_t*)&cpu.inst_ref;
+  uint8_t *inst = (uint8_t*)cpu.inst_act;
   for(i = ilen - 1; i >= 0; i--) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }
   memset(p, ' ', 1);
   p++;
 
-  disassemble(p, cpu.logbuf + sizeof(cpu.logbuf) - p, cpu.pc, (uint8_t *)&cpu.inst_ref, ilen);
+  disassemble(p, cpu.logbuf + sizeof(cpu.logbuf) - p, cpu.pc, (uint8_t *)cpu.inst_act, ilen);
 #endif
 }
 
@@ -106,4 +106,22 @@ void cpu_exec(uint64_t n) {
     
     case NPC_QUIT: statistic();break;
   }
+}
+
+void inst_display() {
+int i,j;
+int ilen = 4;
+data_t pc = 0x00;
+char disinst[1023];
+for (i=0; i<cpu.instlong; i=i+4) {
+  printf("0x%02x:  ", pc);
+  pc=pc+4;
+  for(j=ilen-1; j>=0; j--) {
+    printf("%02x ", *(cpu.mem+i+j));
+  }
+  disassemble(disinst, sizeof(disinst), pc, (uint8_t *)(cpu.mem+i), ilen);
+  printf("\t%s", disinst);
+  printf("\n");
+}
+
 }

@@ -26,7 +26,7 @@ parameter INST_SEG_THREE = 4'b0011;
 parameter INST_SEG_FOUR = 4'b0100;
 
 reg [`INST_SEG-1:0] inst_seg_state;
-reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-1:0];
+reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-2:0];
 
 always @(posedge clk) begin
     if(!rstn || instload) begin
@@ -34,7 +34,6 @@ always @(posedge clk) begin
         inst_byte[0] <= 8'h00;
         inst_byte[1] <= 8'h00;
         inst_byte[2] <= 8'h00;
-        inst_byte[3] <= 8'h00;
         inst <= 32'h00000000;
         pc <= 8'h00;
         snpc <= 8'h00;
@@ -60,8 +59,7 @@ always @(posedge clk) begin
                 instpc_reg <= instpc_reg + 8'h1;
             end
             INST_SEG_FOUR: begin
-                inst_byte[3] <= inst_seg_data;
-                inst <= {inst_byte[3], inst_byte[2], inst_byte[1], inst_byte[0]};
+                inst <= {inst_seg_data, inst_byte[2], inst_byte[1], inst_byte[0]};
                 inst_seg_state <= INST_SEG_ONE;
                 snpc <= pc + 8'h4;
             end

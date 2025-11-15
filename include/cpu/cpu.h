@@ -16,6 +16,8 @@ void set_npc_state(int state, vaddr_t pc, int halt_ret);
 
 void invalid_inst(vaddr_t thispc);
 
+void inst_display();
+
 
 #endif
 

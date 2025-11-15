@@ -12,14 +12,14 @@ module TJUT_MEM(
    input wire memwen
 );
 
-reg [`DATA_WIDTH-1:0] mem [255:0];
+reg [`DATA_WIDTH-1:0] dmem [255:0]; 
 
-assign inst_seg_data = mem[instpc];
-assign rdata = memren ? mem[addr] : 8'b0;
+assign inst_seg_data = dmem[instpc];
+assign rdata = memren ? dmem[addr] : 8'b0;
 
 always @(posedge clk_div4) begin
     if(memwen) begin
-       mem[addr]  <= wdata;
+       dmem[addr]  <= wdata;
     end
 end
 
