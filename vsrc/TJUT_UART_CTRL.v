@@ -22,7 +22,7 @@ reg [3:0] cache_rcnt;
 wire cache_not_empty;
 
 reg [1:0] cache_w_cnt;
-reg         cache_w_en;
+wire         cache_w_en;
 
 wire uart_txd_done;
 wire [`DATA_WIDTH-1:0] uart_din;
@@ -108,15 +108,6 @@ always @(*) begin
     tx_en = 1'b0;
     if(cs == GENTXEN) begin
         tx_en = 1'b1;
-    end
-end
-
-integer i;
-always @(posedge clk) begin
-    if(!rstn) begin
-        for (i = 0; i < 16; i = i+1) begin
-            uart_din_cache[i] <= 8'h0;
-        end
     end
 end
 

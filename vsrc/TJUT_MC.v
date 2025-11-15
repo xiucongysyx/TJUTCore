@@ -18,16 +18,14 @@ module TJUT_MC(
 
 reg [`PC_WIDTH-1:0] instaddr;
 
+reg rx_done_d0;
+reg rx_done_d1;
+wire rx_done_rise = rx_done_d0 & ~rx_done_d1; 
 /*****************ex_out_sig解码*****************/
 wire                      memren      = mc_ctrl_sig[0];
 wire                      memwen      = instload ? rx_done_rise : mc_ctrl_sig[1];
 wire        [`DATA_WIDTH-1:0]              wdata =  instload ? memuartdata : src2;
 wire  [`DATA_WIDTH-1:0] addr = instload ? instaddr : ex_out_data;
-
-reg rx_done_d0;
-reg rx_done_d1;
-
-wire rx_done_rise = rx_done_d0 & ~rx_done_d1; 
 
 always @(posedge clk_div4) begin
   if(!rstn) begin

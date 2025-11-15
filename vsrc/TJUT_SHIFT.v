@@ -18,7 +18,6 @@ always @( * ) begin
       3'b101: sft_result = {sft_data[2:0], 5'b00000};
       3'b110: sft_result = {sft_data[1:0], 6'b000000};
       3'b111: sft_result = {sft_data[0], 7'b0000000};
-      default: sft_result = sft_data;
     endcase   
   end else begin
     if(is_signed == 1'b1) begin
@@ -31,7 +30,6 @@ always @( * ) begin
         3'b101: sft_result = {{5{sft_data[7]}}, sft_data[7:5]};
         3'b110: sft_result = {{6{sft_data[7]}}, sft_data[7:6]};
         3'b111: sft_result = {{7{sft_data[7]}}, sft_data[7]};
-        default: sft_result = sft_data;
       endcase
     end else begin
       case(sft_num)
@@ -43,7 +41,6 @@ always @( * ) begin
         3'b101: sft_result = {5'b00000, sft_data[7:5]};
         3'b110: sft_result = {6'b000000, sft_data[7:6]};
         3'b111: sft_result = {7'b0000000, sft_data[7]};
-        default: sft_result = sft_data;
       endcase
     end
   end

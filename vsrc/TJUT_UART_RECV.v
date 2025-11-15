@@ -7,7 +7,7 @@ module TJUT_UART_RECV(
     output  reg              rx_done
 );
 
-localparam  BPS_CNT = 434;
+localparam  BPS_CNT = 9'd434;
 
 wire start_flag;
 reg start_flag_valid;

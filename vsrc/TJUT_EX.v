@@ -17,6 +17,10 @@ wire clrlsb     = ex_ctrl_sig[2];
 wire is_signed  = ex_ctrl_sig[3];
 wire sft_dir    = ex_ctrl_sig[4];
 
+wire [`ALUOP_WIDTH-1:0] alu_op      = ex_ctrl_sig[`ALUOP_WIDTH-1+`EXCTRL_OTHER:`EXCTRL_OTHER];
+wire [`BRAOP_WIDTH-1:0] bra_op      = ex_ctrl_sig[`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER-1:`ALUOP_WIDTH+`EXCTRL_OTHER];
+wire [`LOGOP_WIDTH-1:0] log_op      = ex_ctrl_sig[`LOGOP_WIDTH+`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER-1:`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER];
+
 wire ADD        = alu_op[0];
 wire SUB        = alu_op[1];
 wire LOGIC      = alu_op[2];
@@ -29,42 +33,13 @@ wire sub        = SUB;
 wire compare    = COMPARE | BRANCH;
 wire shift      = SHIFT;
 
+wire [`COM_RESULT-1:0] com_results;
 wire com_lt     = com_results[0];
 wire com_eq     = com_results[1];
 
 wire log_xor    = log_op[0];
 wire log_or     = log_op[1];
 wire log_and    = log_op[2];
-
-wire [`ALUOP_WIDTH-1:0] alu_op      = ex_ctrl_sig[`ALUOP_WIDTH-1+`EXCTRL_OTHER:`EXCTRL_OTHER];
-wire [`BRAOP_WIDTH-1:0] bra_op      = ex_ctrl_sig[`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER-1:`ALUOP_WIDTH+`EXCTRL_OTHER];
-wire [`LOGOP_WIDTH-1:0] log_op      = ex_ctrl_sig[`LOGOP_WIDTH+`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER-1:`BRAOP_WIDTH+`ALUOP_WIDTH+`EXCTRL_OTHER];
-
-
-/******************8位加法模块*******************/
-TJUT_ADDER u_TJUT_ADDER(
-    .add_data1   (add_data1   ),
-    .add_data2   (add_data2   ),
-    .adder_sub   (sub         ),
-    .adder_out   (add_result  )
-);
-
-TJUT_COMPARE u_TJUT_COMPARE(
-    .com_data1  (com_data1  ),
-    .com_data2  (com_data2  ),
-    .is_signed  (is_signed  ),
-    .com_results(com_results)
-);
-
-TJUT_SHIFT u_TJUT_SHIFT(
-    .sft_data   (sft_data   ),
-    .sft_num    (sft_num    ),
-    .sft_dir    (SHIFT ? sft_dir : 1    ),
-    .is_signed  (SHIFT ? is_signed : 1  ),
-    .sft_result (sft_result )
-);
-
-
 
 
 /***************************算术运算*****************/
@@ -116,7 +91,7 @@ wire [`DATA_WIDTH-1:0] com_data1    = (compare ? src1 : 8'h0);
 wire [`DATA_WIDTH-1:0] com_data3    = (BRANCH | (COMPARE & selalu2) ? src2 : imm);
 wire [`DATA_WIDTH-1:0] com_data2    = (compare ? com_data3 : 8'h0);
 
-wire [`COM_RESULT-1:0] com_results;
+
 wire [`DATA_WIDTH-1:0] com_result   = {7'b0, com_lt};
 
 
@@ -167,5 +142,29 @@ MuxKeyWithDefault #(4'd7, 4'd7, 4'd8) u0_MuxKeyWithDefault(ex_result, alu_op, 8'
     `EX_SFT      , sft_result,
     `EX_IMM      , imm_result
 });
+
+
+/******************8位加法模块*******************/
+TJUT_ADDER u_TJUT_ADDER(
+    .add_data1   (add_data1   ),
+    .add_data2   (add_data2   ),
+    .adder_sub   (sub         ),
+    .adder_out   (add_result  )
+);
+
+TJUT_COMPARE u_TJUT_COMPARE(
+    .com_data1  (com_data1  ),
+    .com_data2  (com_data2  ),
+    .is_signed  (is_signed  ),
+    .com_results(com_results)
+);
+
+TJUT_SHIFT u_TJUT_SHIFT(
+    .sft_data   (sft_data   ),
+    .sft_num    (sft_num    ),
+    .sft_dir    (SHIFT ? sft_dir : 1'b1  ),
+    .is_signed  (SHIFT ? is_signed : 1'b1),
+    .sft_result (sft_result )
+);
 
 endmodule

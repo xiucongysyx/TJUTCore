@@ -64,7 +64,7 @@ endfunction
 //生成g、p信号 保存在level1中
 genvar i;
 generate
-	for(i=0;i<7;i=i+1) begin
+	for(i=0;i<7;i=i+1) begin : gengp1
 		assign level1G[i] = adder_data1[i] & adder_data2[i]; //g[i,i] = adder_data1iadder_data2i
 		assign level1P[i] = adder_data1[i] ^ adder_data2[i]; //p[i,i] = adder_data1i ? adder_data2i
 	end
@@ -74,7 +74,7 @@ endgenerate
 assign level2P[0] = level1P[0];
 assign level2G[0] = level1G[0];
 generate
-	for(i=1;i<7;i=i+1) begin
+	for(i=1;i<7;i=i+1) begin : gengp2
 		assign level2G[i] = Gij(level1G[i], level1P[i], level1G[i-1]);
 		assign level2P[i] = Pij(level1P[i], level1P[i-1]);
 	end
@@ -82,13 +82,13 @@ endgenerate
 
 //第二次合并
 generate
-	for(i=0;i<2;i=i+1) begin
+	for(i=0;i<2;i=i+1) begin : syncgp2
 		assign level3P[i] = level2P[i];
     assign level3G[i] = level2G[i];
 	end
 endgenerate
 generate
-	for(i=2;i<7;i=i+1) begin
+	for(i=2;i<7;i=i+1) begin : gengp3
 		assign level3G[i] = Gij(level2G[i], level2P[i], level2G[i-2]);
 		assign level3P[i] = Pij(level2P[i], level2P[i-2]);
 	end
@@ -96,13 +96,13 @@ endgenerate
 
 //第三次合并
 generate
-	for(i=0;i<4;i=i+1) begin
+	for(i=0;i<4;i=i+1) begin : syncgp3
 		assign level4P[i] = level3P[i];
     assign level4G[i] = level3G[i];
 	end
 endgenerate
 generate
-	for(i=4;i<7;i=i+1) begin
+	for(i=4;i<7;i=i+1) begin : gengp4
 		assign level4G[i] = Gij(level3G[i], level3P[i], level3G[i-4]);
 		assign level4P[i] = Pij(level3P[i], level3P[i-4]);
 	end
@@ -111,7 +111,7 @@ endgenerate
 //通过level6GP求和和进位信号
 xor (adder_out[0],adder_data1[0],adder_data2[0],adder_sub);
 generate
-	for(i=0;i<7;i=i+1) begin
+	for(i=0;i<7;i=i+1) begin : calresult
 	assign adder_out[i+1] = Sum(adder_data1[i+1],adder_data2[i+1],level4G[i],level4P[i],adder_sub);
 	end
 endgenerate

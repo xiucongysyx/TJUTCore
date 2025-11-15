@@ -138,27 +138,31 @@ void uart_recv(){
   if(top->uart_txd == 0 && tpu.udataflag == 0) {
     tpu.udataflag = 1;
   }
-  if(tpu.udataflag == 1) {
+  if(tpu.udataflag) {
     tpu.bpscnt = tpu.bpscnt + 1;
-    if(tpu.bpscnt == 220) {
-      switch (tpu.udatacnt) { 
-        case 1: if(top->uart_txd) {tpu.udata =tpu.udata | 0x01;} break;
-        case 2: if(top->uart_txd) {tpu.udata =tpu.udata | 0x02;} break;
-        case 3: if(top->uart_txd) {tpu.udata =tpu.udata | 0x04;} break;
-        case 4: if(top->uart_txd) {tpu.udata =tpu.udata | 0x08;} break;
-        case 5: if(top->uart_txd) {tpu.udata =tpu.udata | 0x10;} break;
-        case 6: if(top->uart_txd) {tpu.udata =tpu.udata | 0x20;} break;
-        case 7: if(top->uart_txd) {tpu.udata =tpu.udata | 0x40;} break;
-        case 8: if(top->uart_txd) {tpu.udata =tpu.udata | 0x80;} break;
-        case 9: {
-          printf("uart_rec=%c", tpu.udata); 
-          if(tpu.bpscnt == 400) {
-            tpu.udataflag = 0;
-            tpu.udatacnt = 0;
-            tpu.udata = 0;
+    if(tpu.bpscnt == 434) {
             tpu.bpscnt = 0;
-          }
+    }
+    if(tpu.bpscnt == 220) {
+      tpu.udatacnt = tpu.udatacnt + 1;
+      switch (tpu.udatacnt) { 
+        case 1: break;
+        case 2: if(top->uart_txd) {tpu.udata =tpu.udata | 0x01;} break;
+        case 3: if(top->uart_txd) {tpu.udata =tpu.udata | 0x02;} break;
+        case 4: if(top->uart_txd) {tpu.udata =tpu.udata | 0x04;} break;
+        case 5: if(top->uart_txd) {tpu.udata =tpu.udata | 0x08;} break;
+        case 6: if(top->uart_txd) {tpu.udata =tpu.udata | 0x10;} break;
+        case 7: if(top->uart_txd) {tpu.udata =tpu.udata | 0x20;} break;
+        case 8: if(top->uart_txd) {tpu.udata =tpu.udata | 0x40;} break;
+        case 9: if(top->uart_txd) {tpu.udata =tpu.udata | 0x80;} break;
+        case 10: {
+          printf("uart recv: %c\n" ,tpu.udata);
+          tpu.udataflag = 0;
+          tpu.udatacnt = 0;
+          tpu.udata = 0;
+          tpu.bpscnt = 0;
         }
+        default:;
       }
     }
   }

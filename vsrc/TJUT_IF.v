@@ -16,7 +16,6 @@ module TJUT_IF(
 wire                                            selpc = if_ctrl_sig[0];
 wire [`PC_WIDTH-1:0]         dnpc = ~instload ? (selpc ? ex_out_data : snpc) : 8'h0;              
 reg [`PC_WIDTH-1:0]           instpc_reg;
-assign instpc = ~instload ? inst_seg_state == INST_SEG_ONE ? dnpc : instpc_reg : 8'h0;
 
 // 指令读取
 parameter INST_SEG_DEFAULT = 4'b0000;
@@ -27,6 +26,7 @@ parameter INST_SEG_FOUR = 4'b0100;
 
 reg [`INST_SEG-1:0] inst_seg_state;
 reg  [`DATA_WIDTH-1:0]  inst_byte [`INST_SEG-2:0];
+assign instpc = ~instload ? inst_seg_state == INST_SEG_ONE ? dnpc : instpc_reg : 8'h0;
 
 always @(posedge clk) begin
     if(!rstn || instload) begin

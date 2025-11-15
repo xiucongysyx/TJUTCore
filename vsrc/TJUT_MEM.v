@@ -2,7 +2,7 @@
 module TJUT_MEM(
     input wire clk_div4,
     input wire [`DATA_WIDTH-1:0] instpc,
-    output reg [`DATA_WIDTH-1:0] inst_seg_data,
+    output wire [`DATA_WIDTH-1:0] inst_seg_data,
    
     input wire [`DATA_WIDTH-1:0] addr,
     input wire [`DATA_WIDTH-1:0] wdata,

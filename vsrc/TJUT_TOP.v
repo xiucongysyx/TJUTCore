@@ -1,12 +1,16 @@
 `include "define.v"
 module TJUT_TOP(
-    input   wire                        clk,
-    input   wire                        rstn,
-    input  wire                         instload,
-    output  wire                        breakpoint,
-    output  wire                        invalid,
-    input wire                         uart_rxd,
-    output wire                         uart_txd
+    input   wire                        tjut_clk,
+    input   wire                        tjut_rstn,
+    input  wire                         tjut_instload,
+    output  wire                      tjut_breakpoint,
+    output  wire                     tjut_invalid,
+    input wire                         tjut_uart_rxd,
+    output wire                       tjut_uart_txd,
+    
+    inout wire     [`DATA_WIDTH-1:0] tjut_gpio1,
+    inout wire     [`DATA_WIDTH-1:0] tjut_gpio2
+
 );
 
 wire                                            clk_div4;
@@ -34,10 +38,13 @@ wire [`PC_WIDTH-1:0] pc;
 wire [`PC_WIDTH-1:0] instpc;
 wire [`DATA_WIDTH-1:0] inst_seg_data;
 
+wire [`DATA_WIDTH-1:0] gpiodata;
+wire gpio_sel;
+
 TJUT_IF u_TJUT_IF(
-    .clk           (clk           ),
-    .rstn          (rstn          ),
-    .instload (instload),
+    .clk           (tjut_clk           ),
+    .rstn          (tjut_rstn          ),
+    .instload (tjut_instload),
     .if_ctrl_sig   (if_ctrl_sig   ),
     .ex_out_data   (ex_out_data   ),
     .inst_seg_data (inst_seg_data ),
@@ -53,8 +60,8 @@ TJUT_ID u_TJUT_ID(
     .wb_ctrl_sig(wb_ctrl_sig),
     .if_ctrl_sig(if_ctrl_sig),
     .mc_ctrl_sig(mc_ctrl_sig),
-    .breakpoint (breakpoint ),
-    .invalid    (invalid    ),
+    .breakpoint (tjut_breakpoint ),
+    .invalid    (tjut_invalid    ),
     .adder_rd   (adder_rd   ),
     .adder_src1 (adder_src1 ),
     .adder_src2 (adder_src2 ),
@@ -77,6 +84,8 @@ TJUT_WB u_TJUT_WB(
     .snpc       (snpc       ),
     .memregdata (memregdata ),
     .memuartdata(memuartdata),
+    .gpiodata (gpiodata),
+    .gpio_sel (gpio_sel),
     .adder_rd   (adder_rd   ),
     .adder_src1 (adder_src1 ),
     .adder_src2 (adder_src2 ),
@@ -87,35 +96,48 @@ TJUT_WB u_TJUT_WB(
 
 TJUT_MC u_TJUT_MC(
     .clk_div4      (clk_div4      ),
-    .rstn          (rstn          ),
+    .rstn          (tjut_rstn          ),
     .mc_ctrl_sig   (mc_ctrl_sig   ),
     .ex_out_data   (ex_out_data   ),
     .src2          (src2          ),
     .instpc        (instpc        ),
     .memregdata    (memregdata    ),
     .inst_seg_data (inst_seg_data ),
-    .instload      (instload      ),
+    .instload      (tjut_instload      ),
     .memuartdata   (memuartdata   ),
     .rx_done       (rx_done       )
 );
 
 TJUT_UART_CTRL u_TJUT_UART_CTRL(
-    .clk         (clk         ),
-    .rstn        (rstn        ),
-    .instload (instload),
+    .clk         (tjut_clk         ),
+    .rstn        (tjut_rstn        ),
+    .instload (tjut_instload),
     .mc_ctrl_sig (mc_ctrl_sig ),
-    .uart_rxd    (uart_rxd    ),
-    .uart_txd    (uart_txd    ),
+    .uart_rxd    (tjut_uart_rxd    ),
+    .uart_txd    (tjut_uart_txd    ),
     .rx_done     (rx_done     ),
     .ex_out_data (ex_out_data ),
     .src2        (src2        ),
     .memuartdata (memuartdata )
 );
 
+TJUT_GPIO u_TJUT_GPIO(
+    .clk         (tjut_clk         ),
+    .rstn        (tjut_rstn        ),
+    .ex_out_data (ex_out_data ),
+    .src2        (src2        ),
+    .gpiodata    (gpiodata    ),
+    .mc_ctrl_sig (mc_ctrl_sig ),
+    .gpio_sel (gpio_sel),
+    .gpio_io1    (tjut_gpio1    ),
+    .gpio_io2    (tjut_gpio2    )
+);
+
+
 
 TJUT_DIV4 u_TJUT_DIV4(
-    .clk    (clk   ),
-    .rstn   (rstn  ),
+    .clk    (tjut_clk   ),
+    .rstn   (tjut_rstn  ),
     .clk_div4(clk_div4)
 );
 

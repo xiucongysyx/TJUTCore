@@ -17,11 +17,7 @@ wire    [6:0]   opcode      = inst[6:0];
 wire    [2:0]   func3       = inst[14:12];
 wire    [6:0]   func7       = inst[31:25];
 wire    [5:0]   func6       = inst[31:26];
-assign          adder_src1  = inst[19:15]; //第一个寄存器的地址
-assign          adder_src2  = inst[24:20]; //第二个寄存器的地址
-assign          adder_rd    = inst[11:7];  
-assign          breakpoint  = ebreak; // 抛出断点调试，ebreak。
-assign          invalid     = inst == 32'h0 ? 0 : ~valid;
+
 
 
 
@@ -112,7 +108,11 @@ wire valid          = addi | lui | auipc | jal | jalr | sw | lw | add | sub |
                       andi | sll | andr | xori | sb | bge | srli | bgeu | slli |
                       blt | bltu | slt | lh | lhu | sra | srl | ori | slti | lb;  
 
-
+assign          adder_src1  = inst[19:15]; //第一个寄存器的地址
+assign          adder_src2  = inst[24:20]; //第二个寄存器的地址
+assign          adder_rd    = inst[11:7];  
+assign          breakpoint  = ebreak; // 抛出断点调试，ebreak。
+assign          invalid     = inst == 32'h0 ? 0 : ~valid;
 
 /*********************IF信号编码******************/
 wire selpc          = jal | jalr | beq | bne | bge | blt | bgeu | bltu;
@@ -181,6 +181,9 @@ wire regpc          = jal | jalr;
 wire regwen         = addi | lui | auipc | jal | jalr | lw | add | sub | sltiu | sltu | xorr | orr |
                       srai | lbu | andi | sll | andr | xori | srli | slli | slt | lh | lhu | sra | 
                       srl | ori | slti | lb;
+// 读寄存器2的值
+wire memregsrc2     = sb | sh | sw;
+
 // 读使能
 wire regrensrc1     = selalu1 | BRANCH;
 wire regrensrc2     = selalu2 | memregsrc2 | BRANCH;
@@ -191,10 +194,9 @@ assign wb_ctrl_sig  = {memregren, regpc, regwen, regrensrc1, regrensrc2};
 
 /*********************mc信号编码************************/
 wire memwen         = sb | sh | sw;
-wire memren          = lb | lh | lhu | lw;
+wire memren          = lb | lbu | lh | lhu | lw;
 
-// 读寄存器2的值
-wire memregsrc2     = sb | sh | sw;
+
 
 assign mc_ctrl_sig  = {memwen, memren};
 

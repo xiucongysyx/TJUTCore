@@ -8,7 +8,7 @@ module TJUT_UART_SEND(
     output  reg            uart_txd
 );
 
-localparam BPS_CNT = 434;
+localparam BPS_CNT = 9'd434;
 
 wire start_flag;
 reg uart_txd_valid;

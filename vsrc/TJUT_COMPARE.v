@@ -57,7 +57,7 @@ endfunction
 //生成g、p信号 保存在level1中
 genvar i;
 generate
-	for(i=0;i<7;i=i+1) begin
+	for(i=0;i<7;i=i+1) begin : comgengp1
 		assign level1G[i] = adder_data1[i] & adder_data2[i]; //g[i,i] = adder_data1iadder_data2i
 		assign level1P[i] = adder_data1[i] ^ adder_data2[i]; //p[i,i] = adder_data1i ? adder_data2i
 	end
