@@ -12,26 +12,20 @@ output gpio_sel,
 
 input [`MCCTRL_WIDTH-1:0] mc_ctrl_sig,
 
-inout [`DATA_WIDTH-1:0] gpio_io1,
-inout [`DATA_WIDTH-1:0] gpio_io2
+output reg [`DATA_WIDTH-1:0] gpio1_dir,
+output reg [`DATA_WIDTH-1:0] gpio2_dir,
+
+output reg [`DATA_WIDTH-1:0] gpio1_out,
+output reg [`DATA_WIDTH-1:0] gpio2_out,
+
+input reg [`DATA_WIDTH-1:0] gpio1_in,
+input reg [`DATA_WIDTH-1:0] gpio2_in
 );
 
-reg [`DATA_WIDTH-1:0] gpio1_data;
-reg [`DATA_WIDTH-1:0] gpio1_dir;
 
-reg [`DATA_WIDTH-1:0] gpio2_data;
-reg [`DATA_WIDTH-1:0] gpio2_dir;
+reg [`DATA_WIDTH-1:0] gpio1_input_reg;
+reg [`DATA_WIDTH-1:0] gpio2_input_reg;
 
-reg [`DATA_WIDTH-1:0] gpio1_input;
-reg [`DATA_WIDTH-1:0] gpio2_input;
-
-genvar i;
-generate
-    for (i=0; i<8; i=i+1) begin : gpio_tristate
-        assign gpio_io1[i] = gpio1_dir[i] ? gpio1_data[i] : 1'bz;
-        assign gpio_io2[i] = gpio2_dir[i] ? gpio2_data[i] : 1'bz;
-    end
-endgenerate
 
 wire gpio_we = mc_ctrl_sig[1];
 wire gpio_re = mc_ctrl_sig[0];
@@ -41,26 +35,26 @@ assign gpio_sel = mc_ctrl_sig[1] != mc_ctrl_sig[0] ? (gpio_sel_d1 == 1'b1 ? 1'b1
 
 always @(posedge clk) begin
     if(!rstn) begin
-        gpio1_input <= 8'b0;
-        gpio2_input <= 8'b0;
+        gpio1_input_reg <= 8'b0;
+        gpio2_input_reg <= 8'b0;
     end else begin
-        gpio1_input <= gpio_io1;
-        gpio2_input <= gpio_io2;
+        gpio1_input_reg <= gpio1_in;
+        gpio2_input_reg <= gpio2_in;
     end
 end
 
 always @(posedge clk) begin
     if(!rstn) begin
-        gpio1_data <= 8'b0;
+        gpio1_out <= 8'b0;
         gpio1_dir <= 8'b0;
-        gpio1_data <= 8'b0;
+        gpio1_out <= 8'b0;
         gpio1_dir <= 8'b0;
     end else if(gpio_we) begin
         case (ex_out_data)
-            8'hfd: gpio1_data <= src2;
+            8'hfd: gpio1_out <= src2;
             8'hfc: gpio1_dir <= src2;
             
-            8'hfa: gpio2_data <= src2;
+            8'hfa: gpio2_out <= src2;
             8'hf9: gpio2_dir <= src2;
             default: ;
         endcase
@@ -72,13 +66,13 @@ always  @(*) begin
         gpiodata = 8'b0;
     end else if(gpio_re) begin
         case (ex_out_data)
-            8'hfd:gpiodata = gpio1_input;  
+            8'hfd:gpiodata = gpio1_input_reg;  
             8'hfc:gpiodata = gpio1_dir; 
-            8'hfb:gpiodata = gpio1_data; 
+            8'hfb:gpiodata = gpio1_out; 
 
-            8'hfa:gpiodata = gpio2_input; 
+            8'hfa:gpiodata = gpio2_input_reg; 
             8'hf9:gpiodata = gpio2_dir; 
-            8'hf8:gpiodata = gpio2_data; 
+            8'hf8:gpiodata = gpio2_out; 
             default:;
         endcase
     end

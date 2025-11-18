@@ -12,6 +12,10 @@ typedef struct {
   data_t *mem;
   inst_t *inst_act;
   inst_t inst_ref;
+  data_t *gpio2_o;
+  data_t *gpio1_o;
+  data_t *gpio1_i;
+  data_t *gpio2_i;
   long instlong;
   bool *breakpoint;
   bool *invalid;
