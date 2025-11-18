@@ -8,10 +8,15 @@ module TJUT_TOP(
     input wire                         tjut_uart_rxd,
     output wire                       tjut_uart_txd,
     
-    inout wire     [`DATA_WIDTH-1:0] tjut_gpio1,
-    inout wire     [`DATA_WIDTH-1:0] tjut_gpio2
+output wire   [`DATA_WIDTH-1:0]         gpio1_dir,
+output wire   [`DATA_WIDTH-1:0]         gpio2_dir,
 
+output wire  [`DATA_WIDTH-1:0]          gpio1_out,
+output wire  [`DATA_WIDTH-1:0]          gpio2_out,
+input wire [`DATA_WIDTH-1:0]              gpio1_in,
+input wire [`DATA_WIDTH-1:0]              gpio2_in
 );
+
 
 wire                                            clk_div4;
 
@@ -129,10 +134,18 @@ TJUT_GPIO u_TJUT_GPIO(
     .gpiodata    (gpiodata    ),
     .mc_ctrl_sig (mc_ctrl_sig ),
     .gpio_sel (gpio_sel),
+<<<<<<< HEAD
     .gpio_io1    (tjut_gpio1    ),
     .gpio_io2    (tjut_gpio2    )
+=======
+    .gpio1_dir (gpio1_dir),
+    .gpio2_dir (gpio2_dir),
+    .gpio1_out (gpio1_out),
+    .gpio2_out (gpio2_out),
+    .gpio1_in (gpio1_in),
+    .gpio2_in (gpio2_in)
+>>>>>>> 5e03850 (add gpio test)
 );
-
 
 
 TJUT_DIV4 u_TJUT_DIV4(

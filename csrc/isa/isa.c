@@ -85,6 +85,10 @@ static void restart() {
   cpu.invalid = (bool*)&top->invalid;
   cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;
   cpu.mem = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_MC__DOT__u_TJUT_MEM__DOT__dmem;
+  cpu.gpio1_i = (data_t*)&top->gpio1_in;
+  cpu.gpio2_i = (data_t*)&top->gpio2_in;
+  cpu.gpio1_o = (data_t*)&top->gpio1_out;
+  cpu.gpio2_o = (data_t*)&top->gpio2_out;
   top->rstn = 0;
   top->clk = 0;
   top->instload = 0;
