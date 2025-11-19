@@ -12,8 +12,8 @@ output gpio_sel,
 
 input [`MCCTRL_WIDTH-1:0] mc_ctrl_sig,
 
-output reg [`DATA_WIDTH-1:0] gpio1_dir,
-output reg [`DATA_WIDTH-1:0] gpio2_dir,
+output wire [`DATA_WIDTH-1:0] gpio1_dir_n,
+output wire [`DATA_WIDTH-1:0] gpio2_dir_n,
 
 output reg [`DATA_WIDTH-1:0] gpio1_out,
 output reg [`DATA_WIDTH-1:0] gpio2_out,
@@ -22,6 +22,11 @@ input reg [`DATA_WIDTH-1:0] gpio1_in,
 input reg [`DATA_WIDTH-1:0] gpio2_in
 );
 
+reg [`DATA_WIDTH-1:0] gpio1_dir;
+reg [`DATA_WIDTH-1:0] gpio2_dir;
+
+assign gpio1_dir_n = ~gpio1_dir;
+assign gpio2_dir_n = ~gpio2_dir;
 
 reg [`DATA_WIDTH-1:0] gpio1_input_reg;
 reg [`DATA_WIDTH-1:0] gpio2_input_reg;
