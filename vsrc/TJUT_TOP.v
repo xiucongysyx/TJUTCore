@@ -4,7 +4,12 @@ module TJUT_TOP(
     input   wire                        rstn,
     input  wire                         instload,
     output  wire                      breakpoint,
+<<<<<<< HEAD
+    output  wire                     invalid,
+    input wire                        uart_rxd,
+=======
     input wire                         uart_rxd,
+>>>>>>> master
     output wire                       uart_txd,
     
 output wire   [`DATA_WIDTH-1:0]         gpio1_dir_n,
@@ -64,6 +69,10 @@ TJUT_ID u_TJUT_ID(
     .if_ctrl_sig(if_ctrl_sig),
     .mc_ctrl_sig(mc_ctrl_sig),
     .breakpoint (breakpoint ),
+<<<<<<< HEAD
+    .invalid    (invalid    ),
+=======
+>>>>>>> master
     .adder_rd   (adder_rd   ),
     .adder_src1 (adder_src1 ),
     .adder_src2 (adder_src2 ),
