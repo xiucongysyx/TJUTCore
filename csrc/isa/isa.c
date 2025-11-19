@@ -82,7 +82,6 @@ static void restart() {
   tpu.dnpc = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_IF__DOT__dnpc;
   tpu.snpc = (data_t*)&top->rootp->TJUT_TOP__DOT__snpc;
   cpu.breakpoint = (bool*)&top->breakpoint;
-  cpu.invalid = (bool*)&top->invalid;
   cpu.inst_act = (inst_t*)&top->rootp->TJUT_TOP__DOT__inst;
   cpu.mem = (data_t*)&top->rootp->TJUT_TOP__DOT__u_TJUT_MC__DOT__u_TJUT_MEM__DOT__dmem;
   cpu.gpio1_i = (data_t*)&top->gpio1_in;

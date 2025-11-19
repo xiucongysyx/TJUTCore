@@ -18,7 +18,6 @@ typedef struct {
   data_t *gpio2_i;
   long instlong;
   bool *breakpoint;
-  bool *invalid;
   IFDEF(CONFIG_MTRACE, bool memflag);
   IFDEF(CONFIG_ITRACE, char logbuf[2048]);
 } CPU_state;

@@ -6,7 +6,6 @@ module TJUT_ID(
     output  wire    [`IFCTRL_WIDTH-1:0]     if_ctrl_sig,
     output  wire    [`MCCTRL_WIDTH-1:0]     mc_ctrl_sig,
     output  wire                            breakpoint,
-    output  wire                            invalid,
     output  wire    [`ADDER_WIDTH-1:0]      adder_rd,       //写回寄存器的地址
     output  wire    [`ADDER_WIDTH-1:0]      adder_src1, 
     output  wire    [`ADDER_WIDTH-1:0]      adder_src2,
@@ -103,16 +102,10 @@ wire sb             = (op_0100011 & func3_000);
 wire sh             = (op_0100011 & func3_001);
 wire sw             = (op_0100011 & func3_010);
 
-wire valid          = addi | lui | auipc | jal | jalr | sw | lw | add | sub |
-                      sltiu | beq | bne | sltu | xorr | orr | sh | srai | lbu |
-                      andi | sll | andr | xori | sb | bge | srli | bgeu | slli |
-                      blt | bltu | slt | lh | lhu | sra | srl | ori | slti | lb;  
-
 assign          adder_src1  = inst[19:15]; //第一个寄存器的地址
 assign          adder_src2  = inst[24:20]; //第二个寄存器的地址
 assign          adder_rd    = inst[11:7];  
 assign          breakpoint  = ebreak; // 抛出断点调试，ebreak。
-assign          invalid     = inst == 32'h0 ? 0 : ~valid;
 
 /*********************IF信号编码******************/
 wire selpc          = jal | jalr | beq | bne | bge | blt | bgeu | bltu;
