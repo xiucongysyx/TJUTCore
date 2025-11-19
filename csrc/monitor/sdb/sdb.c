@@ -47,7 +47,7 @@ static int cmd_d(char *args);
 static int cmd_si(char *args);
 static int cmd_info(char *args);
 static int cmd_help(char *args);
-static int cmd_gpio(char *args);
+static int cmd_g(char *args);
 
 static struct {
   const char *name;
@@ -63,7 +63,7 @@ static struct {
   { "d", "Delete a watchpoint", cmd_d},
   { "si", "Execution step", cmd_si },
   { "info", "Info reg or info watch point", cmd_info},
-  {"gpio", "Input data to gpio or fetch data from gpio", cmd_gpio},
+  {"g", "Input data to gpio or fetch data from gpio", cmd_g},
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -158,29 +158,30 @@ static int cmd_si(char *args) {
     return 0;
 }
 
-static int cmd_gpio(char *args) {
+static int cmd_g(char *args) {
   char *arg1 = strtok(NULL, " ");
   char *arg2 = strtok(NULL, " ");
   char *arg3 = strtok(NULL, " ");
-  printf("arg1 = %s\t arg2 = %s\n", arg1, arg2);
   if(arg1 == NULL || arg2 == NULL) {
-    printf("USGE:Using \'gpio one p\' to print gpio out data.\ngpio one w h ot write data to gpio\n");
+    printf("USGE:Using \"g 1 o\" to print gpio1 out data.\n     Using \"g 1 i %%c\" to read gpio1 data.\n");
     return 0;
   }
-  if (strcmp(arg1, "one") == 0) {
-    if(strcmp(arg2, "p") == 0) {
+  if (strcmp(arg1, "1") == 0) {
+    if(strcmp(arg2, "o") == 0) {
       printf("gpio1 out data: %c\n", *cpu.gpio1_o);
       return 0;
-    } else if(strcmp(arg2, "w") == 0) {
+    } else if(strcmp(arg2, "i") == 0) {
       *cpu.gpio1_i = *arg3;
+      printf("gpio1 input data: %c\n", *arg3);
       return 0;
     }
   }
-  if (strcmp(arg1, "sec") == 0) {
-    if(strcmp(arg2, "p") == 0) {
+  if (strcmp(arg1, "2") == 0) {
+    if(strcmp(arg2, "o") == 0) {
       printf("gpio2 out data: %c\n", *cpu.gpio2_o);
       return 0;
-    } else if(strcmp(arg2, "w") == 0) {
+    } else if(strcmp(arg2, "i") == 0) {
+      printf("gpio2 input data: %c\n", *arg3);
       *cpu.gpio2_i = *arg3;
       return 0;
     }

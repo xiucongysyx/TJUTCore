@@ -23,7 +23,6 @@ static void trace_and_difftest() {
 
   // 判断是否执行完或者遇到无效指令
   if(*cpu.breakpoint) {set_npc_state(NPC_END, cpu.pc, gpr(10));}
-  else if(*cpu.invalid) {invalid_inst(cpu.pc);}
 
   IFDEF(CONFIG_ITRACE,
     IFDEF(CONFIG_ITRACE_COND, log_write(log_fp, "%s\n", cpu.logbuf));
